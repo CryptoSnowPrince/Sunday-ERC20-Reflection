@@ -21,19 +21,32 @@ async function main() {
 
   // console.log("Greeter deployed to:", greeter.address);
 
-  const IterableMapping = await ethers.getContractFactory("IterableMapping");
-  const iterableMapping = await IterableMapping.deploy();
-  await iterableMapping.deployed();
-  console.log("IterableMapping deploye to:", iterableMapping.address, " on BSC testnet");
+  // const IterableMapping = await ethers.getContractFactory("IterableMapping");
+  // const iterableMapping = await IterableMapping.deploy();
+  // await iterableMapping.deployed();
+  // console.log("IterableMapping deploye to:", iterableMapping.address, " on BSC testnet");
+  // const iterableMapping ={
+  //   address: "0x72C682B0931ec1A799bbf880A57a92970bbe2ecc"
+  // };
 
-  const SUNDAY = await ethers.getContractFactory("SUNDAY", {
-    libraries: {
-      IterableMapping: iterableMapping.address,
-    },
-  });
-  const sunday = await SUNDAY.deploy();
-  await sunday.deployed();
-  console.log("SUNDAY deploye to:", sunday.address, " on BSC testnet");
+  // const SUNDAY = await ethers.getContractFactory("SUNDAY", {
+  //   libraries: {
+  //     IterableMapping: iterableMapping.address,
+  //   },
+  // });
+  // const sunday = await SUNDAY.deploy();
+  // await sunday.deployed();
+  // console.log("SUNDAY deploye to:", sunday.address, " on BSC testnet");
+
+  // const SUNDAYDividendTracker = await ethers.getContractFactory("SUNDAYDividendTracker", {
+  //   libraries: {
+  //     IterableMapping: iterableMapping.address,
+  //   },
+  // });
+  // const sundayDividendTracker = await SUNDAYDividendTracker.deploy();
+  // await sundayDividendTracker.deployed();
+  // console.log("SUNDAYDividendTracker deploye to:", sundayDividendTracker.address, " on BSC testnet");
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere

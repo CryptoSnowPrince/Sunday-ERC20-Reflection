@@ -1,2 +1,34 @@
 IterableMapping deploye to: 0xf7F29dfacDf28F094796820b984b462aEe171bF2  on BSC testnet
 SUNDAY deploye to: 0x018E7413d97B968e4e278953ae710b01F24035d9  on BSC testnet
+
+IterableMapping deploye to: 0xc82ce26a47C6FF96AF13Ca54641D0c79c17941D2  on BSC testnet
+SUNDAY deploye to: 0x2B277808fFb03B8D4f72BB117b306Da692dbBC75  on BSC testnet
+
+IterableMapping deploye to: 0x72C682B0931ec1A799bbf880A57a92970bbe2ecc  on BSC testnet
+SUNDAY deploye to: 0xF72035921A5748434bfA1c5aEe464AE2E5Ff9Cdd  on BSC testnet
+
+SUNDAY deploye to: 0x4EFDFfaBE42A65323Ad6f71Bc4c02b90B100997E  on BSC testnet
+
+SUNDAY deploye to: 0x556917fB344e1F0aF6E028cf54712f5e8E31519D  on BSC testnet
+
+SUNDAYDividendTracker deploye to: 0x3a4D22870053311235FA752134A1b21b11e8B44b  on BSC testnet
+
+=====================================
+npx hardhat run scripts/deploy.ts --network bsctestnet
+
+npx hardhat verify 0x72C682B0931ec1A799bbf880A57a92970bbe2ecc --network bsctestnet
+
+npx hardhat verify --network bsctestnet --contract contracts/Sunday.sol:SUNDAY --libraries libraries.js 0x556917fB344e1F0aF6E028cf54712f5e8E31519D
+
+npx hardhat verify --network bsctestnet --contract contracts/Sunday.sol:SUNDAYDividendTracker --libraries libraries.js 0x3a4D22870053311235FA752134A1b21b11e8B44b
+
+======================================
+Note:
+Parameters for this contract:
+SUNDAY:
+    totalSupply(L841,L842)
+    swapTokensAtAmount
+    _maxTxAmount
+
+SUNDAYDividendTracker:
+    minimumTokenBalanceForDividends

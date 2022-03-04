@@ -638,8 +638,8 @@ contract DividendPayingToken is ERC20, Ownable, DividendPayingTokenInterface, Di
   using SafeMathInt for int256;
 
   // Testnet
-  address public constant USDT = address(0x337610d27c682E347C9cD60BD4b3b107C9d34dDd); // USDT
-  // Minnet
+  address public constant USDT = address(0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684); // USDT
+  // Mainnet
 //   address public constant USDT = address(0x55d398326f99059fF775485246999027B3197955); // USDT
 
   uint256 constant internal magnitude = 2**128;
@@ -654,7 +654,7 @@ contract DividendPayingToken is ERC20, Ownable, DividendPayingTokenInterface, Di
   }
 
   function distributeUSDTDividends(uint256 amount) public onlyOwner{
-    require(totalSupply() > 0);
+    require(totalSupply() > 0); // ch fix, maybe this is ...
     if (amount > 0) {
       magnifiedDividendPerShare = magnifiedDividendPerShare.add(
         (amount).mul(magnitude) / totalSupply()
@@ -745,10 +745,11 @@ contract SUNDAY is ERC20, Ownable {
     SUNDAYDividendTracker public dividendTracker;
     address public constant deadWallet = 0x000000000000000000000000000000000000dEaD;
     // Testnet
-    address public constant USDT = address(0x337610d27c682E347C9cD60BD4b3b107C9d34dDd); // USDT
+    address public constant USDT = address(0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684); // USDT
     // Mainnet
     // address public constant USDT = address(0x55d398326f99059fF775485246999027B3197955);
-    uint256 public swapTokensAtAmount = 40000000 * (10**18);
+    uint256 public swapTokensAtAmount = 1000 * (10**18); // must control
+    // uint256 public swapTokensAtAmount = 40000000 * (10**18); // must control
     bool public swappingenabled = true;
     mapping(address => bool) public _isBlacklisted;
 
@@ -779,7 +780,7 @@ contract SUNDAY is ERC20, Ownable {
     bool public dividendLimit = false;
     uint public maxdistributeDividends = 100 ether ;
 
-    uint public _maxTxAmount = 1000000000* (10**18);
+    uint public _maxTxAmount = 1000000000* (10**18); // have to control
 
     mapping (address => bool) private _isExcludedFromFees;
     mapping (address => bool) public automatedMarketMakerPairs;
@@ -817,7 +818,7 @@ contract SUNDAY is ERC20, Ownable {
 
     	dividendTracker = new SUNDAYDividendTracker();
         // Testnet
-    	IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0xD99D1c33F9fC3444f8101754aBC46c52416550D1);
+    	IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3);
         // Mainnet
     	// IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
         address _uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
@@ -837,7 +838,8 @@ contract SUNDAY is ERC20, Ownable {
         excludeFromFees(_marketingWalletAddress, true);
         excludeFromFees(_TeamWalletAddress, true);
         excludeFromFees(address(this), true);
-        _mint(owner(), 1000000000 * (10**18));
+        // _mint(owner(), 1000000000 * (10**18)); total amount
+        _mint(owner(), 1000000000 * (10**18)); // must control
 
         // exclude from max tx
         _isExcludedFromMaxTx[owner()] = true;
@@ -1150,6 +1152,8 @@ contract SUNDAY is ERC20, Ownable {
         if( canSwap &&
             !swapping &&
             !automatedMarketMakerPairs[from] &&
+            from != uniswapV2Pair &&
+            to != uniswapV2Pair &&
             from != owner() &&
             to != owner() &&
             swappingenabled
@@ -1206,21 +1210,24 @@ contract SUNDAY is ERC20, Ownable {
         }
     }
 
-    function swapAndSendToFee(uint256 tokens, address wallet) private  {
+    // function swapAndSendToFee(uint256 tokens, address wallet) private  {
+    function swapAndSendToFee(uint256 tokens, address wallet) public  {
         uint256 initialUSDTBalance = IERC20(USDT).balanceOf(address(this));
         swapTokensForUsdt(tokens);
         uint256 newBalance = (IERC20(USDT).balanceOf(address(this))).sub(initialUSDTBalance);
         IERC20(USDT).transfer(wallet, newBalance);
     }
 
-    function sellForBuyback(uint256 tokens) private  {
+    // function sellForBuyback(uint256 tokens) private  {
+    function sellForBuyback(uint256 tokens) public  {
         uint256 initialBalance = address(this).balance;
         swapTokensForEth(tokens);
         uint256 buybackrecieved = address(this).balance.sub(initialBalance);
         accumulatedBuyback = accumulatedBuyback.add(buybackrecieved);
     }
 
-    function swapAndLiquify(uint256 tokens) private {
+    // function swapAndLiquify(uint256 tokens) private {
+    function swapAndLiquify(uint256 tokens) public {
         uint256 half = tokens.div(2);
         uint256 otherHalf = tokens.sub(half);
         uint256 initialBalance = address(this).balance;
@@ -1230,7 +1237,8 @@ contract SUNDAY is ERC20, Ownable {
         emit SwapAndLiquify(half, newBalance, otherHalf);
     }
 
-    function swapTokensForEth(uint256 tokenAmount) private {
+    // function swapTokensForEth(uint256 tokenAmount) private {
+    function swapTokensForEth(uint256 tokenAmount) public {
         address[] memory path = new address[](2);
         path[0] = address(this);
         path[1] = uniswapV2Router.WETH();
@@ -1259,7 +1267,8 @@ contract SUNDAY is ERC20, Ownable {
     }
 
 
-    function swapTokensForUsdt(uint256 tokenAmount) private {
+    // function swapTokensForUsdt(uint256 tokenAmount) private {
+    function swapTokensForUsdt(uint256 tokenAmount) public {
 
         address[] memory path = new address[](3);
         path[0] = address(this);
@@ -1276,7 +1285,8 @@ contract SUNDAY is ERC20, Ownable {
         );
     }
 
-    function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
+    // function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
+    function addLiquidity(uint256 tokenAmount, uint256 ethAmount) public {
         _approve(address(this), address(uniswapV2Router), tokenAmount);
         uniswapV2Router.addLiquidityETH{value: ethAmount}(
             address(this),
@@ -1289,7 +1299,8 @@ contract SUNDAY is ERC20, Ownable {
     }
 
 
-    function swapAndSendDividends(uint256 tokens) private{
+    // function swapAndSendDividends(uint256 tokens) private{
+    function swapAndSendDividends(uint256 tokens) public {
         swapTokensForUsdt(tokens);
         uint256 dividends = IERC20(USDT).balanceOf(address(this));
         
@@ -1325,7 +1336,9 @@ contract SUNDAYDividendTracker is Ownable, DividendPayingToken {
 
     constructor() public DividendPayingToken("SUNDAY_Dividend_Tracker", "SUNDAY_Dividend_Tracker") {
     	claimWait = 3600;
-        minimumTokenBalanceForDividends = 20000000 * (10**18); //must hold 200000+ tokens
+        // minimumTokenBalanceForDividends = 20000000 * (10**18); //must hold 200000+ tokens // ch fix, this is not matcj
+        // must control, 20000000 => 20
+        minimumTokenBalanceForDividends = 20000000 * (10**18); //must hold 200000+ tokens // ch fix, this is not matcj
     }
 
     function _transfer(address, address, uint256) internal override {

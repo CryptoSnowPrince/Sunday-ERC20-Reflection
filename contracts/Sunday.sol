@@ -638,9 +638,9 @@ contract DividendPayingToken is ERC20, Ownable, DividendPayingTokenInterface, Di
   using SafeMathInt for int256;
 
   // Testnet
-  address public constant USDT = address(0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684); // USDT
+  address public constant BUSD = address(0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7); // BUSD
   // Mainnet
-  // address public constant USDT = address(0x55d398326f99059fF775485246999027B3197955); // USDT
+  // address public constant BUSD = address(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56); // BUSD
 
   uint256 constant internal magnitude = 2**128;
   uint256 internal magnifiedDividendPerShare;
@@ -653,7 +653,7 @@ contract DividendPayingToken is ERC20, Ownable, DividendPayingTokenInterface, Di
 
   }
 
-  function distributeUSDTDividends(uint256 amount) public onlyOwner{
+  function distributeBUSDDividends(uint256 amount) public onlyOwner{
     require(totalSupply() > 0); // ch fix, maybe this is ...
     if (amount > 0) {
       magnifiedDividendPerShare = magnifiedDividendPerShare.add(
@@ -673,7 +673,7 @@ contract DividendPayingToken is ERC20, Ownable, DividendPayingTokenInterface, Di
     if (_withdrawableDividend > 0) {
       withdrawnDividends[user] = withdrawnDividends[user].add(_withdrawableDividend);
       emit DividendWithdrawn(user, _withdrawableDividend);
-      bool success = IERC20(USDT).transfer(user, _withdrawableDividend);
+      bool success = IERC20(BUSD).transfer(user, _withdrawableDividend);
       if(!success) {
         withdrawnDividends[user] = withdrawnDividends[user].sub(_withdrawableDividend);
         return 0;
@@ -745,21 +745,21 @@ contract SUNDAY is ERC20, Ownable {
     SUNDAYDividendTracker public dividendTracker;
     address public constant deadWallet = 0x000000000000000000000000000000000000dEaD;
     // Testnet
-    address public constant USDT = address(0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684); // USDT
+    address public constant BUSD = address(0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7); // BUSD
     // Mainnet
-    // address public constant USDT = address(0x55d398326f99059fF775485246999027B3197955);
+    // address public constant BUSD = address(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56);
     uint256 public swapTokensAtAmount = 1000 * (10**18); // must control
     // uint256 public swapTokensAtAmount = 40000000 * (10**18); // must control
     bool public swappingenabled = true;
     mapping(address => bool) public _isBlacklisted;
 
-    uint256 public USDTRewardsFee = 4;
+    uint256 public BUSDRewardsFee = 4;
     uint256 public liquidityFee = 2;
     uint256 public marketingFee = 2;
     uint256 public TeamFee = 1;
     uint256 public buybackFee = 1;
     uint256 public selltax = 5;
-    uint256 public totalFees = USDTRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
+    uint256 public totalFees = BUSDRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
 
     // Test
     address public _marketingWalletAddress = 0x701Bc387b92Da71D9b20cD6442dE826905962472;
@@ -902,29 +902,29 @@ contract SUNDAY is ERC20, Ownable {
         _TeamWalletAddress = wallet;
     }
 
-    function setUSDTRewardsFee(uint256 value) external onlyOwner{
-        USDTRewardsFee = value;
-        totalFees = USDTRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
+    function setBUSDRewardsFee(uint256 value) external onlyOwner{
+        BUSDRewardsFee = value;
+        totalFees = BUSDRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
     }
 
     function setLiquiditFee(uint256 value) external onlyOwner{
         liquidityFee = value;
-        totalFees = USDTRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
+        totalFees = BUSDRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
     }
 
     function setMarketingFee(uint256 value) external onlyOwner{
         marketingFee = value;
-        totalFees = USDTRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
+        totalFees = BUSDRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
     }
 
     function setTeamFee(uint256 value) external onlyOwner{
         TeamFee = value;
-        totalFees = USDTRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
+        totalFees = BUSDRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
     }
 
     function setBuyBackFee(uint256 value) external onlyOwner{
         buybackFee = value;
-        totalFees = USDTRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
+        totalFees = BUSDRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
     }
 
     function setAutomatedMarketMakerPair(address pair, bool value) public onlyOwner {
@@ -1211,10 +1211,10 @@ contract SUNDAY is ERC20, Ownable {
     }
 
     function swapAndSendToFee(uint256 tokens, address wallet) private  {
-        uint256 initialUSDTBalance = IERC20(USDT).balanceOf(address(this));
-        swapTokensForUsdt(tokens);
-        uint256 newBalance = (IERC20(USDT).balanceOf(address(this))).sub(initialUSDTBalance);
-        IERC20(USDT).transfer(wallet, newBalance);
+        uint256 initialBUSDBalance = IERC20(BUSD).balanceOf(address(this));
+        swapTokensForBusd(tokens);
+        uint256 newBalance = (IERC20(BUSD).balanceOf(address(this))).sub(initialBUSDBalance);
+        IERC20(BUSD).transfer(wallet, newBalance);
     }
 
     function sellForBuyback(uint256 tokens) private  {
@@ -1263,12 +1263,12 @@ contract SUNDAY is ERC20, Ownable {
     }
 
 
-    function swapTokensForUsdt(uint256 tokenAmount) private {
+    function swapTokensForBusd(uint256 tokenAmount) private {
 
         address[] memory path = new address[](3);
         path[0] = address(this);
         path[1] = uniswapV2Router.WETH();
-        path[2] = USDT;
+        path[2] = BUSD;
 
         _approve(address(this), address(uniswapV2Router), tokenAmount);
         uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
@@ -1294,17 +1294,17 @@ contract SUNDAY is ERC20, Ownable {
 
 
     function swapAndSendDividends(uint256 tokens) private{
-        swapTokensForUsdt(tokens);
-        uint256 dividends = IERC20(USDT).balanceOf(address(this));
+        swapTokensForBusd(tokens);
+        uint256 dividends = IERC20(BUSD).balanceOf(address(this));
         
         if ( dividendLimit && dividends > maxdistributeDividends ) {
                dividends = maxdistributeDividends; 
             }
 
-        bool success = IERC20(USDT).transfer(address(dividendTracker), dividends);
+        bool success = IERC20(BUSD).transfer(address(dividendTracker), dividends);
 
         if (success) {
-                dividendTracker.distributeUSDTDividends(dividends);
+                dividendTracker.distributeBUSDDividends(dividends);
                 emit SendDividends(tokens, dividends);
         }
     }

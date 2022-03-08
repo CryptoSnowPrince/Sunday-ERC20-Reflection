@@ -640,7 +640,7 @@ contract DividendPayingToken is ERC20, Ownable, DividendPayingTokenInterface, Di
   // Testnet
   address public constant USDT = address(0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684); // USDT
   // Mainnet
-//   address public constant USDT = address(0x55d398326f99059fF775485246999027B3197955); // USDT
+  // address public constant USDT = address(0x55d398326f99059fF775485246999027B3197955); // USDT
 
   uint256 constant internal magnitude = 2**128;
   uint256 internal magnifiedDividendPerShare;
@@ -1210,24 +1210,21 @@ contract SUNDAY is ERC20, Ownable {
         }
     }
 
-    // function swapAndSendToFee(uint256 tokens, address wallet) private  {
-    function swapAndSendToFee(uint256 tokens, address wallet) public  {
+    function swapAndSendToFee(uint256 tokens, address wallet) private  {
         uint256 initialUSDTBalance = IERC20(USDT).balanceOf(address(this));
         swapTokensForUsdt(tokens);
         uint256 newBalance = (IERC20(USDT).balanceOf(address(this))).sub(initialUSDTBalance);
         IERC20(USDT).transfer(wallet, newBalance);
     }
 
-    // function sellForBuyback(uint256 tokens) private  {
-    function sellForBuyback(uint256 tokens) public  {
+    function sellForBuyback(uint256 tokens) private  {
         uint256 initialBalance = address(this).balance;
         swapTokensForEth(tokens);
         uint256 buybackrecieved = address(this).balance.sub(initialBalance);
         accumulatedBuyback = accumulatedBuyback.add(buybackrecieved);
     }
 
-    // function swapAndLiquify(uint256 tokens) private {
-    function swapAndLiquify(uint256 tokens) public {
+    function swapAndLiquify(uint256 tokens) private {
         uint256 half = tokens.div(2);
         uint256 otherHalf = tokens.sub(half);
         uint256 initialBalance = address(this).balance;
@@ -1237,8 +1234,7 @@ contract SUNDAY is ERC20, Ownable {
         emit SwapAndLiquify(half, newBalance, otherHalf);
     }
 
-    // function swapTokensForEth(uint256 tokenAmount) private {
-    function swapTokensForEth(uint256 tokenAmount) public {
+    function swapTokensForEth(uint256 tokenAmount) private {
         address[] memory path = new address[](2);
         path[0] = address(this);
         path[1] = uniswapV2Router.WETH();
@@ -1267,8 +1263,7 @@ contract SUNDAY is ERC20, Ownable {
     }
 
 
-    // function swapTokensForUsdt(uint256 tokenAmount) private {
-    function swapTokensForUsdt(uint256 tokenAmount) public {
+    function swapTokensForUsdt(uint256 tokenAmount) private {
 
         address[] memory path = new address[](3);
         path[0] = address(this);
@@ -1285,8 +1280,7 @@ contract SUNDAY is ERC20, Ownable {
         );
     }
 
-    // function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
-    function addLiquidity(uint256 tokenAmount, uint256 ethAmount) public {
+    function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
         _approve(address(this), address(uniswapV2Router), tokenAmount);
         uniswapV2Router.addLiquidityETH{value: ethAmount}(
             address(this),
@@ -1299,8 +1293,7 @@ contract SUNDAY is ERC20, Ownable {
     }
 
 
-    // function swapAndSendDividends(uint256 tokens) private{
-    function swapAndSendDividends(uint256 tokens) public {
+    function swapAndSendDividends(uint256 tokens) private{
         swapTokensForUsdt(tokens);
         uint256 dividends = IERC20(USDT).balanceOf(address(this));
         

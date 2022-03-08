@@ -736,13 +736,13 @@ contract DividendPayingToken is ERC20, Ownable, DividendPayingTokenInterface, Di
 
 pragma solidity ^0.6.2;
 
-contract SUNDAY is ERC20, Ownable {
+contract NAME is ERC20, Ownable {
     using SafeMath for uint256;
 
     IUniswapV2Router02 public uniswapV2Router;
     address public  uniswapV2Pair;
     bool private swapping;
-    SUNDAYDividendTracker public dividendTracker;
+    NAMEDividendTracker public dividendTracker;
     address public constant deadWallet = 0x000000000000000000000000000000000000dEaD;
     // Testnet
     address public constant BUSD = address(0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7); // BUSD
@@ -814,9 +814,9 @@ contract SUNDAY is ERC20, Ownable {
     	address indexed processor
     );
 
-    constructor() public ERC20("SUNDAY", "SUN") {
+    constructor() public ERC20("NAME", "NAME") {
 
-    	dividendTracker = new SUNDAYDividendTracker();
+    	dividendTracker = new NAMEDividendTracker();
         // Testnet
     	IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3);
         // Mainnet
@@ -854,8 +854,8 @@ contract SUNDAY is ERC20, Ownable {
 
     function updateDividendTracker(address newAddress) public onlyOwner {
         require(newAddress != address(dividendTracker), "The dividend tracker already has that address");
-        SUNDAYDividendTracker newDividendTracker = SUNDAYDividendTracker(payable(newAddress));
-        require(newDividendTracker.owner() == address(this), "The new dividend tracker must be owned by the SUNDAY token contract");
+        NAMEDividendTracker newDividendTracker = NAMEDividendTracker(payable(newAddress));
+        require(newDividendTracker.owner() == address(this), "The new dividend tracker must be owned by the NAME token contract");
         newDividendTracker.excludeFromDividends(address(newDividendTracker));
         newDividendTracker.excludeFromDividends(address(this));
         newDividendTracker.excludeFromDividends(owner());
@@ -1311,7 +1311,7 @@ contract SUNDAY is ERC20, Ownable {
 
 }
 
-contract SUNDAYDividendTracker is Ownable, DividendPayingToken {
+contract NAMEDividendTracker is Ownable, DividendPayingToken {
     using SafeMath for uint256;
     using SafeMathInt for int256;
     using IterableMapping for IterableMapping.Map;
@@ -1327,7 +1327,7 @@ contract SUNDAYDividendTracker is Ownable, DividendPayingToken {
     event ClaimWaitUpdated(uint256 indexed newValue, uint256 indexed oldValue);
     event Claim(address indexed account, uint256 amount, bool indexed automatic);
 
-    constructor() public DividendPayingToken("SUNDAY_Dividend_Tracker", "SUNDAY_Dividend_Tracker") {
+    constructor() public DividendPayingToken("NAME_Dividend_Tracker", "NAME_Dividend_Tracker") {
     	claimWait = 3600;
         // minimumTokenBalanceForDividends = 20000000 * (10**18); //must hold 200000+ tokens // ch fix, this is not matcj
         // must control, 20000000 => 20

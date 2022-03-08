@@ -1,30 +1,68 @@
-pragma solidity ^0.8.4;
+/**
+ *Submitted for verification at BscScan.com on 2022-02-27
+*/
 
-abstract contract Context {
-    function _msgSender() internal view virtual returns (address payable) {
-        return payable(msg.sender);
+pragma solidity ^0.6.2;
+
+library SafeMathInt {
+    int256 private constant MIN_INT256 = int256(1) << 255;
+    int256 private constant MAX_INT256 = ~(int256(1) << 255);
+
+    function mul(int256 a, int256 b) internal pure returns (int256) {
+        int256 c = a * b;
+        require(c != MIN_INT256 || (a & MIN_INT256) != (b & MIN_INT256));
+        require((b == 0) || (c / b == a));
+        return c;
     }
 
-    function _msgData() internal view virtual returns (bytes memory) {
-        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
-        return msg.data;
+
+    function div(int256 a, int256 b) internal pure returns (int256) {
+        require(b != -1 || a != MIN_INT256);
+        return a / b;
+    }
+
+ 
+    function sub(int256 a, int256 b) internal pure returns (int256) {
+        int256 c = a - b;
+        require((b >= 0 && c <= a) || (b < 0 && c > a));
+        return c;
+    }
+
+  
+    function add(int256 a, int256 b) internal pure returns (int256) {
+        int256 c = a + b;
+        require((b >= 0 && c >= a) || (b < 0 && c < a));
+        return c;
+    }
+
+
+    function abs(int256 a) internal pure returns (int256) {
+        require(a != MIN_INT256);
+        return a < 0 ? -a : a;
+    }
+
+
+    function toUint256Safe(int256 a) internal pure returns (uint256) {
+        require(a >= 0);
+        return uint256(a);
     }
 }
 
 
-interface IERC20 {
 
-    function totalSupply() external view returns (uint256);
-    function balanceOf(address account) external view returns (uint256);
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function allowance(address owner, address spender) external view returns (uint256);
-    function approve(address spender, uint256 amount) external returns (bool);
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-    
+pragma solidity ^0.6.2;
 
+library SafeMathUint {
+  function toInt256Safe(uint256 a) internal pure returns (int256) {
+    int256 b = int256(a);
+    require(b >= 0);
+    return b;
+  }
 }
+
+
+
+pragma solidity ^0.6.2;
 
 library SafeMath {
 
@@ -38,6 +76,7 @@ library SafeMath {
     function sub(uint256 a, uint256 b) internal pure returns (uint256) {
         return sub(a, b, "SafeMath: subtraction overflow");
     }
+
 
     function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         require(b <= a, errorMessage);
@@ -57,7 +96,6 @@ library SafeMath {
         return c;
     }
 
-
     function div(uint256 a, uint256 b) internal pure returns (uint256) {
         return div(a, b, "SafeMath: division by zero");
     }
@@ -65,8 +103,6 @@ library SafeMath {
     function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         require(b > 0, errorMessage);
         uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-
         return c;
     }
 
@@ -80,73 +116,30 @@ library SafeMath {
     }
 }
 
-library Address {
 
-    function isContract(address account) internal view returns (bool) {
-        // According to EIP-1052, 0x0 is the value returned for not-yet created accounts
-        // and 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470 is returned
-        // for accounts without code, i.e. `keccak256('')`
-        bytes32 codehash;
-        bytes32 accountHash = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
-        // solhint-disable-next-line no-inline-assembly
-        assembly { codehash := extcodehash(account) }
-        return (codehash != accountHash && codehash != 0x0);
+
+pragma solidity ^0.6.2;
+
+abstract contract Context {
+    function _msgSender() internal view virtual returns (address) {
+        return msg.sender;
     }
 
-    function sendValue(address payable recipient, uint256 amount) internal {
-        require(address(this).balance >= amount, "Address: insufficient balance");
-
-        // solhint-disable-next-line avoid-low-level-calls, avoid-call-value
-        (bool success, ) = recipient.call{ value: amount }("");
-        require(success, "Address: unable to send value, recipient may have reverted");
-    }
-
-
-    function functionCall(address target, bytes memory data) internal returns (bytes memory) {
-      return functionCall(target, data, "Address: low-level call failed");
-    }
-
-    function functionCall(address target, bytes memory data, string memory errorMessage) internal returns (bytes memory) {
-        return _functionCallWithValue(target, data, 0, errorMessage);
-    }
-
-    function functionCallWithValue(address target, bytes memory data, uint256 value) internal returns (bytes memory) {
-        return functionCallWithValue(target, data, value, "Address: low-level call with value failed");
-    }
-
-    function functionCallWithValue(address target, bytes memory data, uint256 value, string memory errorMessage) internal returns (bytes memory) {
-        require(address(this).balance >= value, "Address: insufficient balance for call");
-        return _functionCallWithValue(target, data, value, errorMessage);
-    }
-
-    function _functionCallWithValue(address target, bytes memory data, uint256 weiValue, string memory errorMessage) private returns (bytes memory) {
-        require(isContract(target), "Address: call to non-contract");
-
-        (bool success, bytes memory returndata) = target.call{ value: weiValue }(data);
-        if (success) {
-            return returndata;
-        } else {
-            
-            if (returndata.length > 0) {
-                assembly {
-                    let returndata_size := mload(returndata)
-                    revert(add(32, returndata), returndata_size)
-                }
-            } else {
-                revert(errorMessage);
-            }
-        }
+    function _msgData() internal view virtual returns (bytes memory) {
+        this;
+        return msg.data;
     }
 }
 
+
+pragma solidity ^0.6.2;
+
 contract Ownable is Context {
     address private _owner;
-    address private _previousOwner;
-    uint256 private _lockTime;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
-    constructor () {
+    constructor () public {
         address msgSender = _msgSender();
         _owner = msgSender;
         emit OwnershipTransferred(address(0), msgSender);
@@ -154,118 +147,31 @@ contract Ownable is Context {
 
     function owner() public view returns (address) {
         return _owner;
-    }   
-    
+    }
+
+
     modifier onlyOwner() {
         require(_owner == _msgSender(), "Ownable: caller is not the owner");
         _;
     }
-    
+
     function renounceOwnership() public virtual onlyOwner {
         emit OwnershipTransferred(_owner, address(0));
         _owner = address(0);
     }
+
 
     function transferOwnership(address newOwner) public virtual onlyOwner {
         require(newOwner != address(0), "Ownable: new owner is the zero address");
         emit OwnershipTransferred(_owner, newOwner);
         _owner = newOwner;
     }
-
-    function getUnlockTime() public view returns (uint256) {
-        return _lockTime;
-    }
-    
-    function getTime() public view returns (uint256) {
-        return block.timestamp;
-    }
-
-    function lock(uint256 time) public virtual onlyOwner {
-        _previousOwner = _owner;
-        _owner = address(0);
-        _lockTime = block.timestamp + time;
-        emit OwnershipTransferred(_owner, address(0));
-    }
-    
-    function unlock() public virtual {
-        require(_previousOwner == msg.sender, "You don't have permission to unlock");
-        require(block.timestamp > _lockTime , "Contract is locked until 7 days");
-        emit OwnershipTransferred(_owner, _previousOwner);
-        _owner = _previousOwner;
-    }
-}
-
-// pragma solidity >=0.5.0;
-
-interface IUniswapV2Factory {
-    event PairCreated(address indexed token0, address indexed token1, address pair, uint);
-
-    function feeTo() external view returns (address);
-    function feeToSetter() external view returns (address);
-
-    function getPair(address tokenA, address tokenB) external view returns (address pair);
-    function allPairs(uint) external view returns (address pair);
-    function allPairsLength() external view returns (uint);
-
-    function createPair(address tokenA, address tokenB) external returns (address pair);
-
-    function setFeeTo(address) external;
-    function setFeeToSetter(address) external;
 }
 
 
-// pragma solidity >=0.5.0;
 
-interface IUniswapV2Pair {
-    event Approval(address indexed owner, address indexed spender, uint value);
-    event Transfer(address indexed from, address indexed to, uint value);
 
-    function name() external pure returns (string memory);
-    function symbol() external pure returns (string memory);
-    function decimals() external pure returns (uint8);
-    function totalSupply() external view returns (uint);
-    function balanceOf(address owner) external view returns (uint);
-    function allowance(address owner, address spender) external view returns (uint);
-
-    function approve(address spender, uint value) external returns (bool);
-    function transfer(address to, uint value) external returns (bool);
-    function transferFrom(address from, address to, uint value) external returns (bool);
-
-    function DOMAIN_SEPARATOR() external view returns (bytes32);
-    function PERMIT_TYPEHASH() external pure returns (bytes32);
-    function nonces(address owner) external view returns (uint);
-
-    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external;
-    
-    event Burn(address indexed sender, uint amount0, uint amount1, address indexed to);
-    event Swap(
-        address indexed sender,
-        uint amount0In,
-        uint amount1In,
-        uint amount0Out,
-        uint amount1Out,
-        address indexed to
-    );
-    event Sync(uint112 reserve0, uint112 reserve1);
-
-    function MINIMUM_LIQUIDITY() external pure returns (uint);
-    function factory() external view returns (address);
-    function token0() external view returns (address);
-    function token1() external view returns (address);
-    function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
-    function price0CumulativeLast() external view returns (uint);
-    function price1CumulativeLast() external view returns (uint);
-    function kLast() external view returns (uint);
-
-    function burn(address to) external returns (uint amount0, uint amount1);
-    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external;
-    function skim(address to) external;
-    function sync() external;
-
-    function initialize(address, address) external;
-}
-
-// pragma solidity >=0.6.2;
+pragma solidity ^0.6.2;
 
 interface IUniswapV2Router01 {
     function factory() external pure returns (address);
@@ -361,10 +267,6 @@ interface IUniswapV2Router01 {
     function getAmountsIn(uint amountOut, address[] calldata path) external view returns (uint[] memory amounts);
 }
 
-
-
-// pragma solidity >=0.6.2;
-
 interface IUniswapV2Router02 is IUniswapV2Router01 {
     function removeLiquidityETHSupportingFeeOnTransferTokens(
         address token,
@@ -406,128 +308,259 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
     ) external;
 }
 
-contract NAME is Context, IERC20, Ownable {
+
+
+pragma solidity ^0.6.2;
+
+interface IUniswapV2Pair {
+    event Approval(address indexed owner, address indexed spender, uint value);
+    event Transfer(address indexed from, address indexed to, uint value);
+
+    function name() external pure returns (string memory);
+    function symbol() external pure returns (string memory);
+    function decimals() external pure returns (uint8);
+    function totalSupply() external view returns (uint);
+    function balanceOf(address owner) external view returns (uint);
+    function allowance(address owner, address spender) external view returns (uint);
+
+    function approve(address spender, uint value) external returns (bool);
+    function transfer(address to, uint value) external returns (bool);
+    function transferFrom(address from, address to, uint value) external returns (bool);
+
+    function DOMAIN_SEPARATOR() external view returns (bytes32);
+    function PERMIT_TYPEHASH() external pure returns (bytes32);
+    function nonces(address owner) external view returns (uint);
+
+    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external;
+
+    event Mint(address indexed sender, uint amount0, uint amount1);
+    event Burn(address indexed sender, uint amount0, uint amount1, address indexed to);
+    event Swap(
+        address indexed sender,
+        uint amount0In,
+        uint amount1In,
+        uint amount0Out,
+        uint amount1Out,
+        address indexed to
+    );
+    event Sync(uint112 reserve0, uint112 reserve1);
+
+    function MINIMUM_LIQUIDITY() external pure returns (uint);
+    function factory() external view returns (address);
+    function token0() external view returns (address);
+    function token1() external view returns (address);
+    function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
+    function price0CumulativeLast() external view returns (uint);
+    function price1CumulativeLast() external view returns (uint);
+    function kLast() external view returns (uint);
+
+    function mint(address to) external returns (uint liquidity);
+    function burn(address to) external returns (uint amount0, uint amount1);
+    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external;
+    function skim(address to) external;
+    function sync() external;
+
+    function initialize(address, address) external;
+}
+
+
+pragma solidity ^0.6.2;
+
+interface IUniswapV2Factory {
+    event PairCreated(address indexed token0, address indexed token1, address pair, uint);
+
+    function feeTo() external view returns (address);
+    function feeToSetter() external view returns (address);
+
+    function getPair(address tokenA, address tokenB) external view returns (address pair);
+    function allPairs(uint) external view returns (address pair);
+    function allPairsLength() external view returns (uint);
+
+    function createPair(address tokenA, address tokenB) external returns (address pair);
+
+    function setFeeTo(address) external;
+    function setFeeToSetter(address) external;
+}
+
+
+pragma solidity ^0.6.2;
+
+library IterableMapping {
+    struct Map {
+        address[] keys;
+        mapping(address => uint) values;
+        mapping(address => uint) indexOf;
+        mapping(address => bool) inserted;
+    }
+
+    function get(Map storage map, address key) public view returns (uint) {
+        return map.values[key];
+    }
+
+    function getIndexOfKey(Map storage map, address key) public view returns (int) {
+        if(!map.inserted[key]) {
+            return -1;
+        }
+        return int(map.indexOf[key]);
+    }
+
+    function getKeyAtIndex(Map storage map, uint index) public view returns (address) {
+        return map.keys[index];
+    }
+
+
+
+    function size(Map storage map) public view returns (uint) {
+        return map.keys.length;
+    }
+
+    function set(Map storage map, address key, uint val) public {
+        if (map.inserted[key]) {
+            map.values[key] = val;
+        } else {
+            map.inserted[key] = true;
+            map.values[key] = val;
+            map.indexOf[key] = map.keys.length;
+            map.keys.push(key);
+        }
+    }
+
+    function remove(Map storage map, address key) public {
+        if (!map.inserted[key]) {
+            return;
+        }
+
+        delete map.inserted[key];
+        delete map.values[key];
+
+        uint index = map.indexOf[key];
+        uint lastIndex = map.keys.length - 1;
+        address lastKey = map.keys[lastIndex];
+
+        map.indexOf[lastKey] = index;
+        delete map.indexOf[key];
+
+        map.keys[index] = lastKey;
+        map.keys.pop();
+    }
+}
+
+
+
+pragma solidity ^0.6.2;
+
+interface IERC20 {
+
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    function allowance(address owner, address spender) external view returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+
+
+
+pragma solidity ^0.6.2;
+
+interface IERC20Metadata is IERC20 {
+ 
+    function name() external view returns (string memory);
+    function symbol() external view returns (string memory);
+    function decimals() external view returns (uint8);
+}
+
+
+pragma solidity ^0.6.2;
+
+interface DividendPayingTokenOptionalInterface {
+  function withdrawableDividendOf(address _owner) external view returns(uint256);
+  function withdrawnDividendOf(address _owner) external view returns(uint256);
+  function accumulativeDividendOf(address _owner) external view returns(uint256);
+}
+
+
+
+pragma solidity ^0.6.2;
+
+interface DividendPayingTokenInterface {
+  function dividendOf(address _owner) external view returns(uint256);
+  function withdrawDividend() external;
+  event DividendsDistributed(
+    address indexed from,
+    uint256 weiAmount
+  );
+  event DividendWithdrawn(
+    address indexed to,
+    uint256 weiAmount
+  );
+}
+
+
+pragma solidity ^0.6.2;
+
+contract ERC20 is Context, IERC20, IERC20Metadata {
     using SafeMath for uint256;
-    using Address for address;
-    
-    address payable public marketingAddress = payable(bep20 address here); // Marketing Address
-    address public immutable deadAddress = 0x000000000000000000000000000000000000dEaD;
-    mapping (address => uint256) private _rOwned;
-    mapping (address => uint256) private _tOwned;
-    mapping (address => mapping (address => uint256)) private _allowances;
+    mapping(address => uint256) private _balances;
+    mapping(address => mapping(address => uint256)) private _allowances;
+    uint256 private _totalSupply;
 
-    mapping (address => bool) private _isExcludedFromFee;
+    string private _name;
+    string private _symbol;
 
-    mapping (address => bool) private _isExcluded;
-    address[] private _excluded;
-   
-    uint256 private constant MAX = ~uint256(0);
-    uint256 private _tTotal = 1000000 * 10**6 * 10**9;
-    uint256 private _rTotal = (MAX - (MAX % _tTotal));
-    uint256 private _tFeeTotal;
-
-    string private _name = "NAME";
-    string private _symbol = "NAME";
-    uint8 private _decimals = 9;
-
-
-    uint256 public _taxFee = 2;
-    uint256 private _previousTaxFee = _taxFee;
-    
-    uint256 public _liquidityFee = 9;
-    uint256 private _previousLiquidityFee = _liquidityFee;
-    
-    uint256 public marketingDivisor = 3;
-    
-    uint256 public _maxTxAmount = 3000000 * 10**6 * 10**9;
-    uint256 private minimumTokensBeforeSwap = 2000 * 10**6 * 10**9; 
-    uint256 private buyBackUpperLimit = 1 * 10**18;
-
-    IUniswapV2Router02 public immutable uniswapV2Router;
-    address public immutable uniswapV2Pair;
-    
-    bool inSwapAndLiquify;
-    bool public swapAndLiquifyEnabled = true;
-    bool public buyBackEnabled = true;
-
-    
-    event RewardLiquidityProviders(uint256 tokenAmount);
-    event BuyBackEnabledUpdated(bool enabled);
-    event SwapAndLiquifyEnabledUpdated(bool enabled);
-    event SwapAndLiquify(
-        uint256 tokensSwapped,
-        uint256 ethReceived,
-        uint256 tokensIntoLiqudity
-    );
-    
-    event SwapETHForTokens(
-        uint256 amountIn,
-        address[] path
-    );
-    
-    event SwapTokensForETH(
-        uint256 amountIn,
-        address[] path
-    );
-    
-    modifier lockTheSwap {
-        inSwapAndLiquify = true;
-        _;
-        inSwapAndLiquify = false;
-    }
-    
-    constructor () {
-        _rOwned[_msgSender()] = _rTotal;
-        
-        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
-        uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
-            .createPair(address(this), _uniswapV2Router.WETH());
-
-        uniswapV2Router = _uniswapV2Router;
-
-        
-        _isExcludedFromFee[owner()] = true;
-        _isExcludedFromFee[address(this)] = true;
-        
-        emit Transfer(address(0), _msgSender(), _tTotal);
+    constructor(string memory name_, string memory symbol_) public {
+        _name = name_;
+        _symbol = symbol_;
     }
 
-    function name() public view returns (string memory) {
+    function name() public view virtual override returns (string memory) {
         return _name;
     }
 
-    function symbol() public view returns (string memory) {
+    function symbol() public view virtual override returns (string memory) {
         return _symbol;
     }
 
-    function decimals() public view returns (uint8) {
-        return _decimals;
+    function decimals() public view virtual override returns (uint8) {
+        return 18;
     }
 
-    function totalSupply() public view override returns (uint256) {
-        return _tTotal;
+    
+    function totalSupply() public view virtual override returns (uint256) {
+        return _totalSupply;
     }
 
-    function balanceOf(address account) public view override returns (uint256) {
-        if (_isExcluded[account]) return _tOwned[account];
-        return tokenFromReflection(_rOwned[account]);
+
+    function balanceOf(address account) public view virtual override returns (uint256) {
+        return _balances[account];
     }
 
-    function transfer(address recipient, uint256 amount) public override returns (bool) {
+    function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
         _transfer(_msgSender(), recipient, amount);
         return true;
     }
 
-    function allowance(address owner, address spender) public view override returns (uint256) {
+    function allowance(address owner, address spender) public view virtual override returns (uint256) {
         return _allowances[owner][spender];
     }
 
-    function approve(address spender, uint256 amount) public override returns (bool) {
+    function approve(address spender, uint256 amount) public virtual override returns (bool) {
         _approve(_msgSender(), spender, amount);
         return true;
     }
 
-    function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) public virtual override returns (bool) {
         _transfer(sender, recipient, amount);
         _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
         return true;
@@ -543,73 +576,44 @@ contract NAME is Context, IERC20, Ownable {
         return true;
     }
 
-    function isExcludedFromReward(address account) public view returns (bool) {
-        return _isExcluded[account];
+    function _transfer(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) internal virtual {
+        require(sender != address(0), "ERC20: transfer from the zero address");
+        require(recipient != address(0), "ERC20: transfer to the zero address");
+
+        _beforeTokenTransfer(sender, recipient, amount);
+
+        _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
+        _balances[recipient] = _balances[recipient].add(amount);
+        emit Transfer(sender, recipient, amount);
     }
 
-    function totalFees() public view returns (uint256) {
-        return _tFeeTotal;
-    }
-    
-    function minimumTokensBeforeSwapAmount() public view returns (uint256) {
-        return minimumTokensBeforeSwap;
-    }
-    
-    function buyBackUpperLimitAmount() public view returns (uint256) {
-        return buyBackUpperLimit;
-    }
-    
-    function deliver(uint256 tAmount) public {
-        address sender = _msgSender();
-        require(!_isExcluded[sender], "Excluded addresses cannot call this function");
-        (uint256 rAmount,,,,,) = _getValues(tAmount);
-        _rOwned[sender] = _rOwned[sender].sub(rAmount);
-        _rTotal = _rTotal.sub(rAmount);
-        _tFeeTotal = _tFeeTotal.add(tAmount);
-    }
-  
+    function _mint(address account, uint256 amount) internal virtual {
+        require(account != address(0), "ERC20: mint to the zero address");
 
-    function reflectionFromToken(uint256 tAmount, bool deductTransferFee) public view returns(uint256) {
-        require(tAmount <= _tTotal, "Amount must be less than supply");
-        if (!deductTransferFee) {
-            (uint256 rAmount,,,,,) = _getValues(tAmount);
-            return rAmount;
-        } else {
-            (,uint256 rTransferAmount,,,,) = _getValues(tAmount);
-            return rTransferAmount;
-        }
+        _beforeTokenTransfer(address(0), account, amount);
+
+        _totalSupply = _totalSupply.add(amount);
+        _balances[account] = _balances[account].add(amount);
+        emit Transfer(address(0), account, amount);
     }
 
-    function tokenFromReflection(uint256 rAmount) public view returns(uint256) {
-        require(rAmount <= _rTotal, "Amount must be less than total reflections");
-        uint256 currentRate =  _getRate();
-        return rAmount.div(currentRate);
+    function _burn(address account, uint256 amount) internal virtual {
+        require(account != address(0), "ERC20: burn from the zero address");
+        _beforeTokenTransfer(account, address(0), amount);
+        _balances[account] = _balances[account].sub(amount, "ERC20: burn amount exceeds balance");
+        _totalSupply = _totalSupply.sub(amount);
+        emit Transfer(account, address(0), amount);
     }
 
-    function excludeFromReward(address account) public onlyOwner() {
-
-        require(!_isExcluded[account], "Account is already excluded");
-        if(_rOwned[account] > 0) {
-            _tOwned[account] = tokenFromReflection(_rOwned[account]);
-        }
-        _isExcluded[account] = true;
-        _excluded.push(account);
-    }
-
-    function includeInReward(address account) external onlyOwner() {
-        require(_isExcluded[account], "Account is already excluded");
-        for (uint256 i = 0; i < _excluded.length; i++) {
-            if (_excluded[i] == account) {
-                _excluded[i] = _excluded[_excluded.length - 1];
-                _tOwned[account] = 0;
-                _isExcluded[account] = false;
-                _excluded.pop();
-                break;
-            }
-        }
-    }
-
-    function _approve(address owner, address spender, uint256 amount) private {
+    function _approve(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal virtual {
         require(owner != address(0), "ERC20: approve from the zero address");
         require(spender != address(0), "ERC20: approve to the zero address");
 
@@ -617,320 +621,877 @@ contract NAME is Context, IERC20, Ownable {
         emit Approval(owner, spender, amount);
     }
 
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {}
+}
+
+
+
+pragma solidity ^0.6.2;
+
+contract DividendPayingToken is ERC20, Ownable, DividendPayingTokenInterface, DividendPayingTokenOptionalInterface {
+  using SafeMath for uint256;
+  using SafeMathUint for uint256;
+  using SafeMathInt for int256;
+
+  // Testnet
+  address public constant BUSD = address(0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7); // BUSD
+  // Mainnet
+  // address public constant BUSD = address(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56); // BUSD
+
+  uint256 constant internal magnitude = 2**128;
+  uint256 internal magnifiedDividendPerShare;
+  mapping(address => int256) internal magnifiedDividendCorrections;
+  mapping(address => uint256) internal withdrawnDividends;
+
+  uint256 public totalDividendsDistributed;
+
+  constructor(string memory _name, string memory _symbol) public ERC20(_name, _symbol) {
+
+  }
+
+  function distributeBUSDDividends(uint256 amount) public onlyOwner{
+    require(totalSupply() > 0); // ch fix, maybe this is ...
+    if (amount > 0) {
+      magnifiedDividendPerShare = magnifiedDividendPerShare.add(
+        (amount).mul(magnitude) / totalSupply()
+      );
+      emit DividendsDistributed(msg.sender, amount);
+      totalDividendsDistributed = totalDividendsDistributed.add(amount);
+    }
+  }
+
+  function withdrawDividend() public virtual override {
+    _withdrawDividendOfUser(msg.sender);
+  }
+
+ function _withdrawDividendOfUser(address payable user) internal returns (uint256) {
+    uint256 _withdrawableDividend = withdrawableDividendOf(user);
+    if (_withdrawableDividend > 0) {
+      withdrawnDividends[user] = withdrawnDividends[user].add(_withdrawableDividend);
+      emit DividendWithdrawn(user, _withdrawableDividend);
+      bool success = IERC20(BUSD).transfer(user, _withdrawableDividend);
+      if(!success) {
+        withdrawnDividends[user] = withdrawnDividends[user].sub(_withdrawableDividend);
+        return 0;
+      }
+      return _withdrawableDividend;
+    }
+    return 0;
+  }
+
+
+  function dividendOf(address _owner) public view override returns(uint256) {
+    return withdrawableDividendOf(_owner);
+  }
+
+  function withdrawableDividendOf(address _owner) public view override returns(uint256) {
+    return accumulativeDividendOf(_owner).sub(withdrawnDividends[_owner]);
+  }
+
+  function withdrawnDividendOf(address _owner) public view override returns(uint256) {
+    return withdrawnDividends[_owner];
+  }
+
+  function accumulativeDividendOf(address _owner) public view override returns(uint256) {
+    return magnifiedDividendPerShare.mul(balanceOf(_owner)).toInt256Safe()
+      .add(magnifiedDividendCorrections[_owner]).toUint256Safe() / magnitude;
+  }
+
+  function _transfer(address from, address to, uint256 value) internal virtual override {
+    require(false);
+    int256 _magCorrection = magnifiedDividendPerShare.mul(value).toInt256Safe();
+    magnifiedDividendCorrections[from] = magnifiedDividendCorrections[from].add(_magCorrection);
+    magnifiedDividendCorrections[to] = magnifiedDividendCorrections[to].sub(_magCorrection);
+  }
+
+  function _mint(address account, uint256 value) internal override {
+    super._mint(account, value);
+    magnifiedDividendCorrections[account] = magnifiedDividendCorrections[account]
+      .sub( (magnifiedDividendPerShare.mul(value)).toInt256Safe() );
+  }
+
+  function _burn(address account, uint256 value) internal override {
+    super._burn(account, value);
+    magnifiedDividendCorrections[account] = magnifiedDividendCorrections[account]
+      .add( (magnifiedDividendPerShare.mul(value)).toInt256Safe() );
+  }
+
+  function _setBalance(address account, uint256 newBalance) internal {
+    uint256 currentBalance = balanceOf(account);
+
+    if(newBalance > currentBalance) {
+      uint256 mintAmount = newBalance.sub(currentBalance);
+      _mint(account, mintAmount);
+    } else if(newBalance < currentBalance) {
+      uint256 burnAmount = currentBalance.sub(newBalance);
+      _burn(account, burnAmount);
+    }
+  }
+}
+
+
+pragma solidity ^0.6.2;
+
+contract NAME is ERC20, Ownable {
+    using SafeMath for uint256;
+
+    IUniswapV2Router02 public uniswapV2Router;
+    address public  uniswapV2Pair;
+    bool private swapping;
+    NAMEDividendTracker public dividendTracker;
+    address public constant deadWallet = 0x000000000000000000000000000000000000dEaD;
+    // Testnet
+    address public constant BUSD = address(0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7); // BUSD
+    // Mainnet
+    // address public constant BUSD = address(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56);
+    uint256 public swapTokensAtAmount = 1000 * (10**18); // must control
+    // uint256 public swapTokensAtAmount = 40000000 * (10**18); // must control
+    bool public swappingenabled = true;
+    mapping(address => bool) public _isBlacklisted;
+
+    uint256 public BUSDRewardsFee = 4;
+    uint256 public liquidityFee = 2;
+    uint256 public marketingFee = 2;
+    uint256 public TeamFee = 1;
+    uint256 public buybackFee = 1;
+    uint256 public selltax = 5;
+    uint256 public totalFees = BUSDRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
+
+    // Test
+    address public _marketingWalletAddress = 0x701Bc387b92Da71D9b20cD6442dE826905962472;
+    address public _TeamWalletAddress = 0x821965C1fD8B60D4B33E23C5832E2A7662faAADC;
+    // // Main
+    // address public _marketingWalletAddress = 0xE468b9C6C1280a19f74AC48a9288e9604323c6Ff;
+    // address public _TeamWalletAddress = 0x2ae51C8BF3E4Be7966eeaf01D6c2fa857a30f0f0;
+    uint256 public gasForProcessing = 300000;
+    
+    // buyback parameters
+    uint public buybackamount = 0.001 ether;
+    uint public totalbuyback = 0;
+    uint public accumulatedBuyback = 0;
+    uint public buyBackthresholdLimit = 0;
+    bool public buyBackEnabled = true; 
+
+    // dividends parameters
+    bool public dividendLimit = false;
+    uint public maxdistributeDividends = 100 ether ;
+
+    uint public _maxTxAmount = 1000000000* (10**18); // have to control
+
+    mapping (address => bool) private _isExcludedFromFees;
+    mapping (address => bool) public automatedMarketMakerPairs;
+    mapping(address => bool) private _isExcludedFromMaxTx;
+
+    event UpdateDividendTracker(address indexed newAddress, address indexed oldAddress);
+    event UpdateUniswapV2Router(address indexed newAddress, address indexed oldAddress);
+    event ExcludeFromFees(address indexed account, bool isExcluded);
+    event ExcludeMultipleAccountsFromFees(address[] accounts, bool isExcluded);
+    event SetAutomatedMarketMakerPair(address indexed pair, bool indexed value);
+    event LiquidityWalletUpdated(address indexed newLiquidityWallet, address indexed oldLiquidityWallet);
+    event GasForProcessingUpdated(uint256 indexed newValue, uint256 indexed oldValue);
+
+    event SwapAndLiquify(
+        uint256 tokensSwapped,
+        uint256 ethReceived,
+        uint256 tokensIntoLiqudity
+    );
+
+    event SendDividends(
+    	uint256 tokensSwapped,
+    	uint256 amount
+    );
+
+    event ProcessedDividendTracker(
+    	uint256 iterations,
+    	uint256 claims,
+        uint256 lastProcessedIndex,
+    	bool indexed automatic,
+    	uint256 gas,
+    	address indexed processor
+    );
+
+    constructor() public ERC20("NAME", "NAME") {
+
+    	dividendTracker = new NAMEDividendTracker();
+        // Testnet
+    	IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3);
+        // Mainnet
+    	// IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
+        address _uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
+            .createPair(address(this), _uniswapV2Router.WETH());
+
+        uniswapV2Router = _uniswapV2Router;
+        uniswapV2Pair = _uniswapV2Pair;
+
+        _setAutomatedMarketMakerPair(_uniswapV2Pair, true);
+        dividendTracker.excludeFromDividends(address(dividendTracker));
+        dividendTracker.excludeFromDividends(address(this));
+        dividendTracker.excludeFromDividends(owner());
+        dividendTracker.excludeFromDividends(deadWallet);
+        dividendTracker.excludeFromDividends(address(_uniswapV2Router));
+        
+        excludeFromFees(owner(), true);
+        excludeFromFees(_marketingWalletAddress, true);
+        excludeFromFees(_TeamWalletAddress, true);
+        excludeFromFees(address(this), true);
+        // _mint(owner(), 1000000000 * (10**18)); total amount
+        _mint(owner(), 1000000000 * (10**18)); // must control
+
+        // exclude from max tx
+        _isExcludedFromMaxTx[owner()] = true;
+        _isExcludedFromMaxTx[address(this)] = true;
+        _isExcludedFromMaxTx[address(0x000000000000000000000000000000000000dEaD)] = true;
+        _isExcludedFromMaxTx[address(0)] = true;
+    }
+
+    receive() external payable {
+
+  	}
+
+    function updateDividendTracker(address newAddress) public onlyOwner {
+        require(newAddress != address(dividendTracker), "The dividend tracker already has that address");
+        NAMEDividendTracker newDividendTracker = NAMEDividendTracker(payable(newAddress));
+        require(newDividendTracker.owner() == address(this), "The new dividend tracker must be owned by the NAME token contract");
+        newDividendTracker.excludeFromDividends(address(newDividendTracker));
+        newDividendTracker.excludeFromDividends(address(this));
+        newDividendTracker.excludeFromDividends(owner());
+        newDividendTracker.excludeFromDividends(deadWallet);
+        newDividendTracker.excludeFromDividends(address(uniswapV2Router));
+
+        emit UpdateDividendTracker(newAddress, address(dividendTracker));
+
+        dividendTracker = newDividendTracker;
+    }
+
+    function updateUniswapV2Router(address newAddress) public onlyOwner {
+        require(newAddress != address(uniswapV2Router), "The router already has that address");
+        emit UpdateUniswapV2Router(newAddress, address(uniswapV2Router));
+        uniswapV2Router = IUniswapV2Router02(newAddress);
+        address _uniswapV2Pair = IUniswapV2Factory(uniswapV2Router.factory())
+            .createPair(address(this), uniswapV2Router.WETH());
+        uniswapV2Pair = _uniswapV2Pair;
+    }
+
+    function excludeFromFees(address account, bool excluded) public onlyOwner {
+        require(_isExcludedFromFees[account] != excluded, "Account is already the value of 'excluded'");
+        _isExcludedFromFees[account] = excluded;
+        emit ExcludeFromFees(account, excluded);
+    }
+
+    function excludeMultipleAccountsFromFees(address[] memory accounts, bool excluded) public onlyOwner {
+        for(uint256 i = 0; i < accounts.length; i++) {
+            _isExcludedFromFees[accounts[i]] = excluded;
+        }
+
+        emit ExcludeMultipleAccountsFromFees(accounts, excluded);
+    }
+
+    function setSwapTokensAtAmount(uint256 amount) external onlyOwner{
+        swapTokensAtAmount = amount;
+    }
+
+    function setMarketingWallet(address payable wallet) external onlyOwner{
+        _marketingWalletAddress = wallet;
+    }
+
+    function setTeamWallet(address payable wallet) external onlyOwner{
+        _TeamWalletAddress = wallet;
+    }
+
+    function setBUSDRewardsFee(uint256 value) external onlyOwner{
+        BUSDRewardsFee = value;
+        totalFees = BUSDRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
+    }
+
+    function setLiquiditFee(uint256 value) external onlyOwner{
+        liquidityFee = value;
+        totalFees = BUSDRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
+    }
+
+    function setMarketingFee(uint256 value) external onlyOwner{
+        marketingFee = value;
+        totalFees = BUSDRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
+    }
+
+    function setTeamFee(uint256 value) external onlyOwner{
+        TeamFee = value;
+        totalFees = BUSDRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
+    }
+
+    function setBuyBackFee(uint256 value) external onlyOwner{
+        buybackFee = value;
+        totalFees = BUSDRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
+    }
+
+    function setAutomatedMarketMakerPair(address pair, bool value) public onlyOwner {
+        require(pair != uniswapV2Pair, "The PancakeSwap pair cannot be removed from automatedMarketMakerPairs");
+
+        _setAutomatedMarketMakerPair(pair, value);
+    }
+    
+    function blacklistAddress(address account, bool value) external onlyOwner{
+        _isBlacklisted[account] = value;
+    }
+
+    function _setAutomatedMarketMakerPair(address pair, bool value) private {
+        require(automatedMarketMakerPairs[pair] != value, "Automated market maker pair is already set to that value");
+        automatedMarketMakerPairs[pair] = value;
+
+        if(value) {
+            dividendTracker.excludeFromDividends(pair);
+        }
+
+        emit SetAutomatedMarketMakerPair(pair, value);
+    }
+
+    function ensureMaxTxAmount(
+        address from,
+        address to,
+        uint256 amount
+    ) private view {
+        if (
+            _isExcludedFromMaxTx[from] == false && // default will be false
+            _isExcludedFromMaxTx[to] == false // default will be false
+        ) {
+                require(amount <= _maxTxAmount, "Transfer amount exceeds the maxTxAmount.");
+          }
+    }
+
+    function setMaxTxPercent(uint256 maxTxPercent) public onlyOwner() {
+        _maxTxAmount = totalSupply().mul(maxTxPercent).div(10000);
+    }   
+
+    function setExcludeFromMaxTx(address _address, bool value) public onlyOwner { 
+        _isExcludedFromMaxTx[_address] = value;
+    }     
+
+    function setBuyBackStatus(bool _enabled) external onlyOwner {
+        buyBackEnabled = _enabled;
+    }
+
+    function setdividendLimitStatus(bool _enabled) external onlyOwner {
+        dividendLimit = _enabled;
+    }
+
+     function setSwappingStatus(bool _enabled) external onlyOwner {
+        swappingenabled = _enabled;
+    }
+    
+    function changemaxdistributedividendLimit(uint256 _newvalue)external onlyOwner {
+        maxdistributeDividends = _newvalue; 
+    }
+
+    function changebuyBackthresholdLimit(uint256 _newvalue)external onlyOwner {
+        buyBackthresholdLimit = _newvalue; 
+    }
+
+    function setBuybackAmount(uint256 _amount) external onlyOwner {
+        buybackamount = _amount;
+    } 
+
+    function changeselltax(uint256 _newtax)public onlyOwner {
+        selltax = _newtax; 
+    } 
+
+    function updateGasForProcessing(uint256 newValue) public onlyOwner {
+        require(newValue >= 200000 && newValue <= 500000, "gasForProcessing must be between 200,000 and 500,000");
+        require(newValue != gasForProcessing, "Cannot update gasForProcessing to same value");
+        emit GasForProcessingUpdated(newValue, gasForProcessing);
+        gasForProcessing = newValue;
+    }
+
+    function updateClaimWait(uint256 claimWait) external onlyOwner {
+        dividendTracker.updateClaimWait(claimWait);
+    }
+
+    function swapOnDemand(bool sendToMarketingFee, bool sendToTeamFee, bool liquify, bool sendDividends, bool buybacktax) external onlyOwner {
+        swapping = true;
+
+        uint256 contractTokenBalance = balanceOf(address(this));
+
+        if (sendToMarketingFee) {
+            uint256 marketingTokens = contractTokenBalance.mul(marketingFee).div(totalFees);
+            swapAndSendToFee(marketingTokens, _marketingWalletAddress);
+        }
+
+        if (sendToTeamFee) {
+            uint256 TeamTokens = contractTokenBalance.mul(TeamFee).div(totalFees);
+            swapAndSendToFee(TeamTokens, _TeamWalletAddress);
+        }
+
+        if (liquify) {
+            uint256 swapTokens = contractTokenBalance.mul(liquidityFee).div(totalFees);
+            swapAndLiquify(swapTokens);
+        }
+
+        if (buybacktax) {
+            uint256 buybackTokens = contractTokenBalance.mul(buybackFee).div(totalFees);
+            sellForBuyback(buybackTokens);
+        }
+
+        if (sendDividends) {
+            uint256 sellTokens = balanceOf(address(this));
+            swapAndSendDividends(sellTokens);
+        }
+
+        swapping = false;
+    }
+
+    function buybackOnDemand(uint256 _amount) external onlyOwner {
+        require (_amount < address(this).balance, "Amount exceed contract balance");
+        totalbuyback = totalbuyback.add(_amount);
+        swapETHForTokens(deadWallet, _amount);
+    }
+
+    function getClaimWait() external view returns(uint256) {
+        return dividendTracker.claimWait();
+    }
+
+    function getTotalDividendsDistributed() external view returns (uint256) {
+        return dividendTracker.totalDividendsDistributed();
+    }
+
+    function isExcludedFromFees(address account) public view returns(bool) {
+        return _isExcludedFromFees[account];
+    }
+
+    function isExcludedFromMaxTx(address account) public view returns(bool) {
+        return _isExcludedFromMaxTx[account];
+    }
+
+    function withdrawableDividendOf(address account) public view returns(uint256) {
+    	return dividendTracker.withdrawableDividendOf(account);
+  	}
+
+	function dividendTokenBalanceOf(address account) public view returns (uint256) {
+		return dividendTracker.balanceOf(account);
+	}
+
+	function excludeFromDividends(address account) external onlyOwner{
+	    dividendTracker.excludeFromDividends(account);
+	}
+
+    function getAccountDividendsInfo(address account)
+        external view returns (
+            address,
+            int256,
+            int256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256) {
+        return dividendTracker.getAccount(account);
+    }
+
+	function getAccountDividendsInfoAtIndex(uint256 index)
+        external view returns (
+            address,
+            int256,
+            int256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256) {
+    	return dividendTracker.getAccountAtIndex(index);
+    }
+
+	function processDividendTracker(uint256 gas) external {
+		(uint256 iterations, uint256 claims, uint256 lastProcessedIndex) = dividendTracker.process(gas);
+		emit ProcessedDividendTracker(iterations, claims, lastProcessedIndex, false, gas, tx.origin);
+    }
+
+    function claim() external {
+		dividendTracker.processAccount(msg.sender, false);
+    }
+
+    function claimAddress(address claimee) external onlyOwner {
+		dividendTracker.processAccount(payable(claimee), false);
+    }
+
+    function getLastProcessedIndex() external view returns(uint256) {
+    	return dividendTracker.getLastProcessedIndex();
+    }
+
+    function setLastProcessedIndex(uint256 index) external onlyOwner {
+    	dividendTracker.setLastProcessedIndex(index);
+    }
+
+    function updateminimumTokenBalanceForDividends(uint256 value) external onlyOwner {
+    	dividendTracker.updateminimumTokenBalanceForDividends(value);
+    }
+
+    function getNumberOfDividendTokenHolders() external view returns(uint256) {
+        return dividendTracker.getNumberOfTokenHolders();
+    }
+
     function _transfer(
         address from,
         address to,
         uint256 amount
-    ) private {
+    ) internal override {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
-        require(amount > 0, "Transfer amount must be greater than zero");
-        if(from != owner() && to != owner()) {
-            require(amount <= _maxTxAmount, "Transfer amount exceeds the maxTxAmount.");
+        require(!_isBlacklisted[from] && !_isBlacklisted[to], 'Blacklisted address');
+
+        if(amount == 0) {
+            super._transfer(from, to, 0);
+            return;
         }
 
-        uint256 contractTokenBalance = balanceOf(address(this));
-        bool overMinimumTokenBalance = contractTokenBalance >= minimumTokensBeforeSwap;
-        
-        if (!inSwapAndLiquify && swapAndLiquifyEnabled && to == uniswapV2Pair) {
-            if (overMinimumTokenBalance) {
-                contractTokenBalance = minimumTokensBeforeSwap;
-                swapTokens(contractTokenBalance);    
-            }
-	        uint256 balance = address(this).balance;
-            if (buyBackEnabled && balance > uint256(1 * 10**18)) {
-                
-                if (balance > buyBackUpperLimit)
-                    balance = buyBackUpperLimit;
-                
-                buyBackTokens(balance.div(100));
-            }
+        ensureMaxTxAmount(from, to, amount);
+
+		uint256 contractTokenBalance = balanceOf(address(this));
+        bool canSwap = contractTokenBalance >= swapTokensAtAmount;
+
+        if( canSwap &&
+            !swapping &&
+            !automatedMarketMakerPairs[from] &&
+            from != uniswapV2Pair &&
+            to != uniswapV2Pair &&
+            from != owner() &&
+            to != owner() &&
+            swappingenabled
+        ) {
+            swapping = true;
+            uint256 marketingTokens = contractTokenBalance.mul(marketingFee).div(totalFees);
+            swapAndSendToFee(marketingTokens,_marketingWalletAddress);
+             uint256 TeamTokens = contractTokenBalance.mul(TeamFee).div(totalFees);
+            swapAndSendToFee(TeamTokens,_TeamWalletAddress);
+            uint256 swapTokens = contractTokenBalance.mul(liquidityFee).div(totalFees);
+            swapAndLiquify(swapTokens);
+            uint256 buybackTokens = contractTokenBalance.mul(buybackFee).div(totalFees);
+            sellForBuyback(buybackTokens);
+            uint256 sellTokens = balanceOf(address(this));
+            swapAndSendDividends(sellTokens);
+            swapping = false;
         }
-        
-        bool takeFee = true;
-        
-        //if any account belongs to _isExcludedFromFee account then remove the fee
-        if(_isExcludedFromFee[from] || _isExcludedFromFee[to]){
+
+        bool takeFee = !swapping;
+        if(_isExcludedFromFees[from] || _isExcludedFromFees[to]) {
             takeFee = false;
         }
-        
-        _tokenTransfer(from,to,amount,takeFee);
+
+        if(takeFee) {
+        	uint256 fees = amount.mul(totalFees).div(100);
+        	if(automatedMarketMakerPairs[to] && from != address(this) && from != owner()){
+        	    fees += amount.mul(selltax).div(100);
+
+
+            if (buyBackEnabled && address(this).balance > buybackamount && amount > buyBackthresholdLimit ) {
+                totalbuyback = totalbuyback.add(buybackamount);
+                swapETHForTokens(deadWallet, buybackamount);         
+        }
+
+        	}
+        	amount = amount.sub(fees);
+            super._transfer(from, address(this), fees);
+        }
+
+        super._transfer(from, to, amount);
+
+        try dividendTracker.setBalance(payable(from), balanceOf(from)) {} catch {}
+        try dividendTracker.setBalance(payable(to), balanceOf(to)) {} catch {}
+
+        if(!swapping) {
+	    	uint256 gas = gasForProcessing;
+
+	    	try dividendTracker.process(gas) returns (uint256 iterations, uint256 claims, uint256 lastProcessedIndex) {
+	    		emit ProcessedDividendTracker(iterations, claims, lastProcessedIndex, true, gas, tx.origin);
+	    	}
+	    	catch {
+
+	    	}
+        }
     }
 
-    function swapTokens(uint256 contractTokenBalance) private lockTheSwap {
-       
+    function swapAndSendToFee(uint256 tokens, address wallet) private  {
+        uint256 initialBUSDBalance = IERC20(BUSD).balanceOf(address(this));
+        swapTokensForBusd(tokens);
+        uint256 newBalance = (IERC20(BUSD).balanceOf(address(this))).sub(initialBUSDBalance);
+        IERC20(BUSD).transfer(wallet, newBalance);
+    }
+
+    function sellForBuyback(uint256 tokens) private  {
         uint256 initialBalance = address(this).balance;
-        swapTokensForEth(contractTokenBalance);
-        uint256 transferredBalance = address(this).balance.sub(initialBalance);
-
-        //Send to Marketing address
-        transferToAddressETH(marketingAddress, transferredBalance.div(_liquidityFee).mul(marketingDivisor));
-        
+        swapTokensForEth(tokens);
+        uint256 buybackrecieved = address(this).balance.sub(initialBalance);
+        accumulatedBuyback = accumulatedBuyback.add(buybackrecieved);
     }
-    
 
-    function buyBackTokens(uint256 amount) private lockTheSwap {
-    	if (amount > 0) {
-    	    swapETHForTokens(amount);
-	    }
+    function swapAndLiquify(uint256 tokens) private {
+        uint256 half = tokens.div(2);
+        uint256 otherHalf = tokens.sub(half);
+        uint256 initialBalance = address(this).balance;
+        swapTokensForEth(half);
+        uint256 newBalance = address(this).balance.sub(initialBalance);
+        addLiquidity(otherHalf, newBalance);
+        emit SwapAndLiquify(half, newBalance, otherHalf);
     }
-    
+
     function swapTokensForEth(uint256 tokenAmount) private {
-        // generate the uniswap pair path of token -> weth
         address[] memory path = new address[](2);
         path[0] = address(this);
         path[1] = uniswapV2Router.WETH();
 
         _approve(address(this), address(uniswapV2Router), tokenAmount);
-
-        // make the swap
         uniswapV2Router.swapExactTokensForETHSupportingFeeOnTransferTokens(
             tokenAmount,
-            0, // accept any amount of ETH
+            0, 
             path,
-            address(this), // The contract
+            address(this),
             block.timestamp
         );
-        
-        emit SwapTokensForETH(tokenAmount, path);
     }
-    
-    function swapETHForTokens(uint256 amount) private {
-        // generate the uniswap pair path of token -> weth
+
+    function swapETHForTokens(address recipient, uint256 ethAmount) private {
         address[] memory path = new address[](2);
         path[0] = uniswapV2Router.WETH();
         path[1] = address(this);
 
-      // make the swap
-        uniswapV2Router.swapExactETHForTokensSupportingFeeOnTransferTokens{value: amount}(
-            0, // accept any amount of Tokens
+        uniswapV2Router.swapExactETHForTokensSupportingFeeOnTransferTokens{value: ethAmount}(
+            0, 
             path,
-            deadAddress, // Burn address
-            block.timestamp.add(300)
+            address(recipient),
+            block.timestamp
         );
-        
-        emit SwapETHForTokens(amount, path);
     }
-    
-    function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
-        // approve token transfer to cover all possible scenarios
-        _approve(address(this), address(uniswapV2Router), tokenAmount);
 
-        // add the liquidity
+
+    function swapTokensForBusd(uint256 tokenAmount) private {
+
+        address[] memory path = new address[](3);
+        path[0] = address(this);
+        path[1] = uniswapV2Router.WETH();
+        path[2] = BUSD;
+
+        _approve(address(this), address(uniswapV2Router), tokenAmount);
+        uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+            tokenAmount,
+            0,
+            path,
+            address(this),
+            block.timestamp
+        );
+    }
+
+    function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
+        _approve(address(this), address(uniswapV2Router), tokenAmount);
         uniswapV2Router.addLiquidityETH{value: ethAmount}(
             address(this),
             tokenAmount,
-            0, // slippage is unavoidable
-            0, // slippage is unavoidable
+            0, 
+            0,
             owner(),
             block.timestamp
         );
     }
 
-    function _tokenTransfer(address sender, address recipient, uint256 amount,bool takeFee) private {
-        if(!takeFee)
-            removeAllFee();
+
+    function swapAndSendDividends(uint256 tokens) private{
+        swapTokensForBusd(tokens);
+        uint256 dividends = IERC20(BUSD).balanceOf(address(this));
         
-        if (_isExcluded[sender] && !_isExcluded[recipient]) {
-            _transferFromExcluded(sender, recipient, amount);
-        } else if (!_isExcluded[sender] && _isExcluded[recipient]) {
-            _transferToExcluded(sender, recipient, amount);
-        } else if (_isExcluded[sender] && _isExcluded[recipient]) {
-            _transferBothExcluded(sender, recipient, amount);
-        } else {
-            _transferStandard(sender, recipient, amount);
+        if ( dividendLimit && dividends > maxdistributeDividends ) {
+               dividends = maxdistributeDividends; 
+            }
+
+        bool success = IERC20(BUSD).transfer(address(dividendTracker), dividends);
+
+        if (success) {
+                dividendTracker.distributeBUSDDividends(dividends);
+                emit SendDividends(tokens, dividends);
+        }
+    }
+
+}
+
+contract NAMEDividendTracker is Ownable, DividendPayingToken {
+    using SafeMath for uint256;
+    using SafeMathInt for int256;
+    using IterableMapping for IterableMapping.Map;
+
+    IterableMapping.Map private tokenHoldersMap;
+    uint256 public lastProcessedIndex;
+    mapping (address => bool) public excludedFromDividends;
+    mapping (address => uint256) public lastClaimTimes;
+    uint256 public claimWait;
+    uint256 public minimumTokenBalanceForDividends;
+
+    event ExcludeFromDividends(address indexed account);
+    event ClaimWaitUpdated(uint256 indexed newValue, uint256 indexed oldValue);
+    event Claim(address indexed account, uint256 amount, bool indexed automatic);
+
+    constructor() public DividendPayingToken("NAME_Dividend_Tracker", "NAME_Dividend_Tracker") {
+    	claimWait = 3600;
+        // minimumTokenBalanceForDividends = 20000000 * (10**18); //must hold 200000+ tokens // ch fix, this is not matcj
+        // must control, 20000000 => 20
+        minimumTokenBalanceForDividends = 20000000 * (10**18); //must hold 200000+ tokens // ch fix, this is not matcj
+    }
+
+    function _transfer(address, address, uint256) internal override {
+        require(false, "No transfers allowed");
+    }
+
+    function withdrawDividend() public override {
+        require(false, "WithdrawDividend disabled. Use the 'claim' function on the main contract.");
+    }
+ 
+    function excludeFromDividends(address account) external onlyOwner {
+    	require(!excludedFromDividends[account]);
+    	excludedFromDividends[account] = true;
+    	_setBalance(account, 0);
+    	tokenHoldersMap.remove(account);
+    	emit ExcludeFromDividends(account);
+    }
+
+    function updateClaimWait(uint256 newClaimWait) external onlyOwner {
+        require(newClaimWait >= 3600 && newClaimWait <= 86400, "claimWait must be updated to between 1 and 24 hours");
+        require(newClaimWait != claimWait, "Cannot update claimWait to same value");
+        emit ClaimWaitUpdated(newClaimWait, claimWait);
+        claimWait = newClaimWait;
+    }
+    
+    function updateminimumTokenBalanceForDividends(uint256 value) external onlyOwner {
+        minimumTokenBalanceForDividends = value;
+    }
+
+    function setLastProcessedIndex(uint256 index) external onlyOwner {
+    	lastProcessedIndex = index;
+    }
+
+    function getLastProcessedIndex() external view returns(uint256) {
+    	return lastProcessedIndex;
+    }
+
+    function getNumberOfTokenHolders() external view returns(uint256) {
+        return tokenHoldersMap.keys.length;
+    }
+
+    function getAccount(address _account)
+        public view returns (
+            address account,
+            int256 index,
+            int256 iterationsUntilProcessed,
+            uint256 withdrawableDividends,
+            uint256 totalDividends,
+            uint256 lastClaimTime,
+            uint256 nextClaimTime,
+            uint256 secondsUntilAutoClaimAvailable) {
+        account = _account;
+        index = tokenHoldersMap.getIndexOfKey(account);
+        iterationsUntilProcessed = -1;
+
+        if(index >= 0) {
+            if(uint256(index) > lastProcessedIndex) {
+                iterationsUntilProcessed = index.sub(int256(lastProcessedIndex));
+            }
+            else {
+                uint256 processesUntilEndOfArray = tokenHoldersMap.keys.length > lastProcessedIndex ? tokenHoldersMap.keys.length.sub(lastProcessedIndex) : 0;
+                iterationsUntilProcessed = index.add(int256(processesUntilEndOfArray));
+            }
         }
         
-        if(!takeFee)
-            restoreAllFee();
+        withdrawableDividends = withdrawableDividendOf(account);
+        totalDividends = accumulativeDividendOf(account);
+        lastClaimTime = lastClaimTimes[account];
+        nextClaimTime = lastClaimTime > 0 ? lastClaimTime.add(claimWait) : 0;
+        secondsUntilAutoClaimAvailable = nextClaimTime > block.timestamp ? nextClaimTime.sub(block.timestamp) : 0;
     }
 
-    function _transferStandard(address sender, address recipient, uint256 tAmount) private {
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity) = _getValues(tAmount);
-        _rOwned[sender] = _rOwned[sender].sub(rAmount);
-        _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
-        _takeLiquidity(tLiquidity);
-        _reflectFee(rFee, tFee);
-        emit Transfer(sender, recipient, tTransferAmount);
-    }
-
-    function _transferToExcluded(address sender, address recipient, uint256 tAmount) private {
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity) = _getValues(tAmount);
-	    _rOwned[sender] = _rOwned[sender].sub(rAmount);
-        _tOwned[recipient] = _tOwned[recipient].add(tTransferAmount);
-        _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);           
-        _takeLiquidity(tLiquidity);
-        _reflectFee(rFee, tFee);
-        emit Transfer(sender, recipient, tTransferAmount);
-    }
-
-    function _transferFromExcluded(address sender, address recipient, uint256 tAmount) private {
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity) = _getValues(tAmount);
-    	_tOwned[sender] = _tOwned[sender].sub(tAmount);
-        _rOwned[sender] = _rOwned[sender].sub(rAmount);
-        _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);   
-        _takeLiquidity(tLiquidity);
-        _reflectFee(rFee, tFee);
-        emit Transfer(sender, recipient, tTransferAmount);
-    }
-
-    function _transferBothExcluded(address sender, address recipient, uint256 tAmount) private {
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity) = _getValues(tAmount);
-    	_tOwned[sender] = _tOwned[sender].sub(tAmount);
-        _rOwned[sender] = _rOwned[sender].sub(rAmount);
-        _tOwned[recipient] = _tOwned[recipient].add(tTransferAmount);
-        _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);        
-        _takeLiquidity(tLiquidity);
-        _reflectFee(rFee, tFee);
-        emit Transfer(sender, recipient, tTransferAmount);
-    }
-
-    function _reflectFee(uint256 rFee, uint256 tFee) private {
-        _rTotal = _rTotal.sub(rFee);
-        _tFeeTotal = _tFeeTotal.add(tFee);
-    }
-
-    function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
-        (uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity) = _getTValues(tAmount);
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, tFee, tLiquidity, _getRate());
-        return (rAmount, rTransferAmount, rFee, tTransferAmount, tFee, tLiquidity);
-    }
-
-    function _getTValues(uint256 tAmount) private view returns (uint256, uint256, uint256) {
-        uint256 tFee = calculateTaxFee(tAmount);
-        uint256 tLiquidity = calculateLiquidityFee(tAmount);
-        uint256 tTransferAmount = tAmount.sub(tFee).sub(tLiquidity);
-        return (tTransferAmount, tFee, tLiquidity);
-    }
-
-    function _getRValues(uint256 tAmount, uint256 tFee, uint256 tLiquidity, uint256 currentRate) private pure returns (uint256, uint256, uint256) {
-        uint256 rAmount = tAmount.mul(currentRate);
-        uint256 rFee = tFee.mul(currentRate);
-        uint256 rLiquidity = tLiquidity.mul(currentRate);
-        uint256 rTransferAmount = rAmount.sub(rFee).sub(rLiquidity);
-        return (rAmount, rTransferAmount, rFee);
-    }
-
-    function _getRate() private view returns(uint256) {
-        (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
-        return rSupply.div(tSupply);
-    }
-
-    function _getCurrentSupply() private view returns(uint256, uint256) {
-        uint256 rSupply = _rTotal;
-        uint256 tSupply = _tTotal;      
-        for (uint256 i = 0; i < _excluded.length; i++) {
-            if (_rOwned[_excluded[i]] > rSupply || _tOwned[_excluded[i]] > tSupply) return (_rTotal, _tTotal);
-            rSupply = rSupply.sub(_rOwned[_excluded[i]]);
-            tSupply = tSupply.sub(_tOwned[_excluded[i]]);
+    function getAccountAtIndex(uint256 index)
+        public view returns (
+            address,
+            int256,
+            int256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256) {
+    	if(index >= tokenHoldersMap.size()) {
+            return (0x0000000000000000000000000000000000000000, -1, -1, 0, 0, 0, 0, 0);
         }
-        if (rSupply < _rTotal.div(_tTotal)) return (_rTotal, _tTotal);
-        return (rSupply, tSupply);
-    }
-    
-    function _takeLiquidity(uint256 tLiquidity) private {
-        uint256 currentRate =  _getRate();
-        uint256 rLiquidity = tLiquidity.mul(currentRate);
-        _rOwned[address(this)] = _rOwned[address(this)].add(rLiquidity);
-        if(_isExcluded[address(this)])
-            _tOwned[address(this)] = _tOwned[address(this)].add(tLiquidity);
-    }
-    
-    function calculateTaxFee(uint256 _amount) private view returns (uint256) {
-        return _amount.mul(_taxFee).div(
-            10**2
-        );
-    }
-    
-    function calculateLiquidityFee(uint256 _amount) private view returns (uint256) {
-        return _amount.mul(_liquidityFee).div(
-            10**2
-        );
-    }
-    
-    function removeAllFee() private {
-        if(_taxFee == 0 && _liquidityFee == 0) return;
-        
-        _previousTaxFee = _taxFee;
-        _previousLiquidityFee = _liquidityFee;
-        
-        _taxFee = 0;
-        _liquidityFee = 0;
-    }
-    
-    function restoreAllFee() private {
-        _taxFee = _previousTaxFee;
-        _liquidityFee = _previousLiquidityFee;
+
+        address account = tokenHoldersMap.getKeyAtIndex(index);
+        return getAccount(account);
     }
 
-    function isExcludedFromFee(address account) public view returns(bool) {
-        return _isExcludedFromFee[account];
-    }
-    
-    function excludeFromFee(address account) public onlyOwner {
-        _isExcludedFromFee[account] = true;
-    }
-    
-    function includeInFee(address account) public onlyOwner {
-        _isExcludedFromFee[account] = false;
-    }
-    
-    function setTaxFeePercent(uint256 taxFee) external onlyOwner() {
-        _taxFee = taxFee;
-    }
-    
-    function setLiquidityFeePercent(uint256 liquidityFee) external onlyOwner() {
-        _liquidityFee = liquidityFee;
-    }
-    
-    function setMaxTxAmount(uint256 maxTxAmount) external onlyOwner() {
-        _maxTxAmount = maxTxAmount;
-    }
-    
-    function setMarketingDivisor(uint256 divisor) external onlyOwner() {
-        marketingDivisor = divisor;
+    function canAutoClaim(uint256 lastClaimTime) private view returns (bool) {
+    	if(lastClaimTime > block.timestamp)  {
+    		return false;
+    	}
+    	return block.timestamp.sub(lastClaimTime) >= claimWait;
     }
 
-    function setNumTokensSellToAddToLiquidity(uint256 _minimumTokensBeforeSwap) external onlyOwner() {
-        minimumTokensBeforeSwap = _minimumTokensBeforeSwap;
-    }
-    
-     function setBuybackUpperLimit(uint256 buyBackLimit) external onlyOwner() {
-        buyBackUpperLimit = buyBackLimit * 10**18;
+    function setBalance(address payable account, uint256 newBalance) external onlyOwner {
+    	if(excludedFromDividends[account]) {
+    		return;
+    	}
+    	if(newBalance >= minimumTokenBalanceForDividends) {
+            _setBalance(account, newBalance);
+    		tokenHoldersMap.set(account, newBalance);
+    	}
+    	else {
+            _setBalance(account, 0);
+    		tokenHoldersMap.remove(account);
+    	}
+        if (canAutoClaim(lastClaimTimes[account])) {
+    	processAccount(account, true);
+        }
     }
 
-    function setMarketingAddress(address _marketingAddress) external onlyOwner() {
-        marketingAddress = payable(_marketingAddress);
+    function process(uint256 gas) public returns (uint256, uint256, uint256) {
+    	uint256 numberOfTokenHolders = tokenHoldersMap.keys.length;
+    	if(numberOfTokenHolders == 0) {
+    		return (0, 0, lastProcessedIndex);
+    	}
+
+    	uint256 _lastProcessedIndex = lastProcessedIndex;
+    	uint256 gasUsed = 0;
+    	uint256 gasLeft = gasleft();
+    	uint256 iterations = 0;
+    	uint256 claims = 0;
+
+    	while(gasUsed < gas && iterations < numberOfTokenHolders) {
+    		_lastProcessedIndex++;
+
+    		if(_lastProcessedIndex >= tokenHoldersMap.keys.length) {
+    			_lastProcessedIndex = 0;
+    		}
+
+    		address account = tokenHoldersMap.keys[_lastProcessedIndex];
+
+    		if(canAutoClaim(lastClaimTimes[account])) {
+    			if(processAccount(payable(account), true)) {
+    				claims++;
+    			}
+    		}
+
+    		iterations++;
+    		uint256 newGasLeft = gasleft();
+    		if(gasLeft > newGasLeft) {
+    			gasUsed = gasUsed.add(gasLeft.sub(newGasLeft));
+    		}
+    		gasLeft = newGasLeft;
+    	}
+    	lastProcessedIndex = _lastProcessedIndex;
+    	return (iterations, claims, lastProcessedIndex);
     }
 
-    function setSwapAndLiquifyEnabled(bool _enabled) public onlyOwner {
-        swapAndLiquifyEnabled = _enabled;
-        emit SwapAndLiquifyEnabledUpdated(_enabled);
+    function processAccount(address payable account, bool automatic) public onlyOwner returns (bool) {
+        uint256 amount = _withdrawDividendOfUser(account);
+
+    	if(amount > 0) {
+    		lastClaimTimes[account] = block.timestamp;
+            emit Claim(account, amount, automatic);
+    		return true;
+    	}
+    	return false;
     }
-    
-    function setBuyBackEnabled(bool _enabled) public onlyOwner {
-        buyBackEnabled = _enabled;
-        emit BuyBackEnabledUpdated(_enabled);
-    }
-    
-    function prepareForPreSale() external onlyOwner {
-        setSwapAndLiquifyEnabled(false);
-        _taxFee = 0;
-        _liquidityFee = 0;
-        _maxTxAmount = 1000000000 * 10**6 * 10**9;
-    }
-    
-    function afterPreSale() external onlyOwner {
-        setSwapAndLiquifyEnabled(true);
-        _taxFee = 2;
-        _liquidityFee = 9;
-        _maxTxAmount = 3000000 * 10**6 * 10**9;
-    }
-    
-    function transferToAddressETH(address payable recipient, uint256 amount) private {
-        recipient.transfer(amount);
-    }
-    
-     //to recieve ETH from uniswapV2Router when swaping
-    receive() external payable {}
 }

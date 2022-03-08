@@ -1316,6 +1316,11 @@ contract NAME is ERC20, Ownable {
         }
     }
 
+    function setTransferEnabled(bool _enabled) external onlyOwner {
+        transferEnabled = _enabled;
+        emit SetTransferEnabled(transferEnabled);
+    }
+
 }
 
 contract NAMEDividendTracker is Ownable, DividendPayingToken {
@@ -1500,10 +1505,5 @@ contract NAMEDividendTracker is Ownable, DividendPayingToken {
     		return true;
     	}
     	return false;
-    }
-
-    function setTransferEnabled(bool _enabled) external onlyOwner {
-        transferEnabled = _enabled;
-        emit SetTransferEnabled(transferEnabled);
     }
 }

@@ -751,7 +751,9 @@ contract NAME is ERC20, Ownable {
     uint256 public swapTokensAtAmount = 1000 * (10**18); // must control
     // uint256 public swapTokensAtAmount = 40000000 * (10**18); // must control
     bool public swappingenabled = true;
+    // blacklist
     mapping(address => bool) public _isBlacklisted;
+    bool public transferEnabled = true;
 
     uint256 public BUSDRewardsFee = 4;
     uint256 public liquidityFee = 2;
@@ -784,7 +786,7 @@ contract NAME is ERC20, Ownable {
 
     mapping (address => bool) private _isExcludedFromFees;
     mapping (address => bool) public automatedMarketMakerPairs;
-    mapping(address => bool) private _isExcludedFromMaxTx;
+    mapping (address => bool) private _isExcludedFromMaxTx;
 
     event UpdateDividendTracker(address indexed newAddress, address indexed oldAddress);
     event UpdateUniswapV2Router(address indexed newAddress, address indexed oldAddress);
@@ -813,6 +815,8 @@ contract NAME is ERC20, Ownable {
     	uint256 gas,
     	address indexed processor
     );
+
+    event SetTransferEnabled(bool enabled);
 
     constructor() public ERC20("NAME", "NAME") {
 
@@ -1138,6 +1142,9 @@ contract NAME is ERC20, Ownable {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
         require(!_isBlacklisted[from] && !_isBlacklisted[to], 'Blacklisted address');
+
+        // transfer enable/disable
+        require(transferEnabled == true, "token transfer disabled by owner");
 
         if(amount == 0) {
             super._transfer(from, to, 0);
@@ -1493,5 +1500,10 @@ contract NAMEDividendTracker is Ownable, DividendPayingToken {
     		return true;
     	}
     	return false;
+    }
+
+    function setTransferEnabled(bool _enabled) external onlyOwner {
+        transferEnabled = _enabled;
+        emit SetTransferEnabled(transferEnabled);
     }
 }

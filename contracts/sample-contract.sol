@@ -1,4 +1,8 @@
-pragma solidity ^0.8.4;
+//SPDX-License-Identifier: MIT
+
+// pragma solidity ^0.8.4;
+
+pragma solidity 0.8.7;
 
 abstract contract Context {
     function _msgSender() internal view virtual returns (address payable) {
@@ -406,7 +410,7 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
     ) external;
 }
 
-contract NAME is Context, IERC20, Ownable {
+contract NAMESample is Context, IERC20, Ownable {
     using SafeMath for uint256;
     using Address for address;
     
@@ -480,7 +484,10 @@ contract NAME is Context, IERC20, Ownable {
     constructor () {
         _rOwned[_msgSender()] = _rTotal;
         
-        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
+        // testnet
+        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3);
+        // mainnet
+        // IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
         uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
             .createPair(address(this), _uniswapV2Router.WETH());
 

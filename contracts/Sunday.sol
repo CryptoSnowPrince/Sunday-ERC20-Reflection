@@ -1,3 +1,5 @@
+//SPDX-License-Identifier: MIT
+
 /**
  *Submitted for verification at BscScan.com on 2022-02-27
 */

@@ -640,9 +640,9 @@ contract DividendPayingToken is ERC20, Ownable, DividendPayingTokenInterface, Di
   using SafeMathInt for int256;
 
   // Testnet
-  address public constant BUSD = address(0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7); // BUSD
+  // address public constant BUSD = address(0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7); // BUSD
   // Mainnet
-  // address public constant BUSD = address(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56); // BUSD
+  address public constant BUSD = address(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56); // BUSD
 
   uint256 constant internal magnitude = 2**128;
   uint256 internal magnifiedDividendPerShare;
@@ -747,9 +747,9 @@ contract NAME is ERC20, Ownable {
     NAMEDividendTracker public dividendTracker;
     address public constant deadWallet = 0x000000000000000000000000000000000000dEaD;
     // Testnet
-    address public constant BUSD = address(0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7); // BUSD
+    // address public constant BUSD = address(0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7); // BUSD
     // Mainnet
-    // address public constant BUSD = address(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56);
+    address public constant BUSD = address(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56);
     uint256 public swapTokensAtAmount = 1000 * (10**18); // must control
     // uint256 public swapTokensAtAmount = 40000000 * (10**18); // must control
     bool public swappingenabled = true;
@@ -765,10 +765,10 @@ contract NAME is ERC20, Ownable {
     uint256 public selltax = 5;
     uint256 public totalFees = BUSDRewardsFee.add(liquidityFee).add(marketingFee).add(buybackFee).add(TeamFee);
 
-    // Test
+    // Test and Main
     address public _marketingWalletAddress = 0x701Bc387b92Da71D9b20cD6442dE826905962472;
     address public _TeamWalletAddress = 0x821965C1fD8B60D4B33E23C5832E2A7662faAADC;
-    // // Main
+
     // address public _marketingWalletAddress = 0xE468b9C6C1280a19f74AC48a9288e9604323c6Ff;
     // address public _TeamWalletAddress = 0x2ae51C8BF3E4Be7966eeaf01D6c2fa857a30f0f0;
     uint256 public gasForProcessing = 300000;
@@ -824,9 +824,9 @@ contract NAME is ERC20, Ownable {
 
     	dividendTracker = new NAMEDividendTracker();
         // Testnet
-    	IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3);
+    	// IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3);
         // Mainnet
-    	// IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
+    	IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
         address _uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
             .createPair(address(this), _uniswapV2Router.WETH());
 

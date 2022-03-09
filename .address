@@ -39,3 +39,5 @@ npx hardhat run scripts/deploySampleContract.ts --network bsctestnet
 NAMESample deployed to: 0x5ACD6F3b86F2ad16695CD60f5e04dA53D3fA4898
 
 npx hardhat verify 0x5ACD6F3b86F2ad16695CD60f5e04dA53D3fA4898 --network bsctestnet --contract contracts/sample-contract.sol:NAMESample
+
+NAMESample deployed to: 0xcB1dF93b6D8e0Ede107f142f120D4491c9FEcE1A

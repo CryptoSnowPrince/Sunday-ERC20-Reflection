@@ -672,6 +672,7 @@ contract NAMESample is Context, IERC20, Ownable {
         uint256 transferredBalance = address(this).balance.sub(initialBalance);
 
         //Send to Marketing address
+        // This line maybe have issue
         transferToAddressETH(marketingAddress, transferredBalance.div(_liquidityFee).mul(marketingDivisor));
         
     }

@@ -960,9 +960,13 @@ contract NAME is ERC20, Ownable {
         }
     }
 
-    function getBlacklist() public view returns(address[]) {
-        return _isBlacklisted
-    } 
+    function getBlacklist() external view returns(BlacklistInfo[] memory) {
+        return _blacklistInfo;
+    }
+
+    function getLengthOfBlacklist() external view returns(uint256) {
+        return _blacklistInfo.length;
+    }
 
     function _setAutomatedMarketMakerPair(address pair, bool value) private {
         require(automatedMarketMakerPairs[pair] != value, "Automated market maker pair is already set to that value");

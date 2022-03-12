@@ -764,7 +764,7 @@ contract NAME is ERC20, Ownable {
     bool public transferEnabled = true;
     // sort blacklist
     BlacklistInfo[] public _blacklistInfo;
-    mapping (address => uint256) _blacklistIdx;
+    mapping (address => uint256) public _blacklistIdx;
 
     uint256 public BUSDRewardsFee = 4;
     uint256 public liquidityFee = 2;

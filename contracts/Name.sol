@@ -861,6 +861,10 @@ contract NAME is ERC20, Ownable {
         _isExcludedFromMaxTx[address(this)] = true;
         _isExcludedFromMaxTx[address(0x000000000000000000000000000000000000dEaD)] = true;
         _isExcludedFromMaxTx[address(0)] = true;
+
+        // sorted blacklist
+        _blacklistInfo.push(BlacklistInfo({account:msg.sender, isBlacklist:false}));
+        _blacklistIdx[msg.sender] = 0;
     }
 
     receive() external payable {

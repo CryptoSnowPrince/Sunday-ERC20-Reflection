@@ -5,6 +5,7 @@
 */
 
 pragma solidity ^0.6.2;
+// pragma experimental ABIEncoderV2;
 
 library SafeMathInt {
     int256 private constant MIN_INT256 = int256(1) << 255;
@@ -741,6 +742,11 @@ pragma solidity ^0.6.2;
 contract NAME is ERC20, Ownable {
     using SafeMath for uint256;
 
+    struct BlacklistInfo {
+        address account;
+        bool    isBlacklist;
+    }
+
     IUniswapV2Router02 public uniswapV2Router;
     address public  uniswapV2Pair;
     bool private swapping;
@@ -754,8 +760,11 @@ contract NAME is ERC20, Ownable {
     // uint256 public swapTokensAtAmount = 40000000 * (10**18); // must control
     bool public swappingenabled = true;
     // blacklist
-    mapping(address => bool) public _isBlacklisted;
+    mapping (address => bool) public _isBlacklisted;
     bool public transferEnabled = true;
+    // sort blacklist
+    BlacklistInfo[] public _blacklistInfo;
+    mapping (address => uint256) _blacklistIdx;
 
     uint256 public BUSDRewardsFee = 4;
     uint256 public liquidityFee = 2;
@@ -940,8 +949,20 @@ contract NAME is ERC20, Ownable {
     }
     
     function blacklistAddress(address account, bool value) external onlyOwner{
+        // custom
+        require(_isBlacklisted[account] != value, "already set this value.");
         _isBlacklisted[account] = value;
+        if (_blacklistInfo[_blacklistIdx[account]].account == account) {
+            _blacklistInfo[_blacklistIdx[account]].isBlacklist = value;
+        } else {
+            _blacklistIdx[account] = _blacklistInfo.length;
+            _blacklistInfo.push(BlacklistInfo({account: account, isBlacklist: value}));
+        }
     }
+
+    function getBlacklist() public view returns(address[]) {
+        return _isBlacklisted
+    } 
 
     function _setAutomatedMarketMakerPair(address pair, bool value) private {
         require(automatedMarketMakerPairs[pair] != value, "Automated market maker pair is already set to that value");

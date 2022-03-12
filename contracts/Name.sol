@@ -5,7 +5,7 @@
 */
 
 pragma solidity ^0.6.2;
-// pragma experimental ABIEncoderV2;
+pragma experimental ABIEncoderV2;
 
 library SafeMathInt {
     int256 private constant MIN_INT256 = int256(1) << 255;

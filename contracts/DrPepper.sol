@@ -241,13 +241,8 @@ contract DividendDistributor is IDividendDistributor {
         uint256 totalRealised;
     }
 
-    // Mainnet
     IBEP20 BUSD = IBEP20(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56);
     address WBNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
-    
-    // Testnet
-    // IBEP20 BUSD = IBEP20(0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7);
-    // address WBNB = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
     IDEXRouter router;
 
     address[] shareholders;
@@ -281,10 +276,7 @@ contract DividendDistributor is IDividendDistributor {
     constructor (address _router) {
         router = _router != address(0)
         ? IDEXRouter(_router)
-        // Mainnet
         : IDEXRouter(0x10ED43C718714eb63d5aA57B78B54704E256024E);
-        // Testnet
-        // : IDEXRouter(0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3);
         _token = msg.sender;
     }
 
@@ -408,14 +400,9 @@ contract DrPepper is IBEP20, Auth {
     using SafeMath for uint256;
 
     uint256 public constant MASK = type(uint128).max;
-    // Mainnet
+
     address BUSD = 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56;
     address public WBNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
-    
-    // Testnet
-    // address BUSD = 0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7;
-    // address public WBNB = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
-
     address DEAD = 0x000000000000000000000000000000000000dEaD;
     address ZERO = 0x0000000000000000000000000000000000000000;
     address DEAD_NON_CHECKSUM = 0x000000000000000000000000000000000000dEaD;
@@ -531,7 +518,6 @@ contract DrPepper is IBEP20, Auth {
         emit Transfer(address(0), msg.sender, _totalSupply);
 
         // blacklist
-        // Owner don't have to be in blacklist, if owner is in blacklist, maybe occur some bugs in trasfer and transferFrom process 
         _blacklistInfo.push(BlacklistInfo({account:msg.sender, isBlacklist:false}));
         _blacklistIdx[msg.sender] = 0;
     }

@@ -531,6 +531,7 @@ contract DrPepper is IBEP20, Auth {
         emit Transfer(address(0), msg.sender, _totalSupply);
 
         // blacklist
+        // Owner don't have to be in blacklist, if owner is in blacklist, maybe occur some bugs in trasfer and transferFrom process 
         _blacklistInfo.push(BlacklistInfo({account:msg.sender, isBlacklist:false}));
         _blacklistIdx[msg.sender] = 0;
     }
